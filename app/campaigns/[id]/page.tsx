@@ -139,9 +139,9 @@ export default function CampaignDetailPage() {
       <div className="max-w-4xl mx-auto">
         {/* Campaign Details */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">
+          <div className="flex items-start justify-between mb-4 gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold text-gray-900 break-words">
                 {campaign.title}
               </h1>
             </div>
@@ -149,13 +149,13 @@ export default function CampaignDetailPage() {
               {isOwner && (
                 <Link
                   href={`/campaigns/${params.id}/edit`}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium whitespace-nowrap"
                 >
                   Edit
                 </Link>
               )}
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(
                   campaign.status
                 )}`}
               >
