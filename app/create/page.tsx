@@ -5,56 +5,90 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuth } from "@/app/providers/AuthProvider";
 
-export default function CreateContractPage() {
+function slugify(s: string) {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
+}
+
+export default function CreateCampaignPage() {
   const router = useRouter();
   const { publicKey } = useWallet();
   const { user } = useAuth();
 
   const [formData, setFormData] = useState({
     title: "",
+    slug: "",
     description: "",
-    contractAmount: "",
-    ratePer1kViews: "",
     requirements: "",
+    bountyAmount: "",
+    ratePer1kViews: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const onTitleChange = (v: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: v,
+      slug: prev.slug ? prev.slug : slugify(v),
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!publicKey) {
-      setError("Please connect your wallet");
-      return;
-    }
+    if (!user) return setError("Please sign in.");
+    if (!publicKey) return setError("Please connect your wallet.");
+
+    const title = formData.title.trim();
+    const slug = (formData.slug || slugify(title)).trim();
+    const bounty = Number(formData.bountyAmount);
+    const rate = Number(formData.ratePer1kViews);
+
+    if (title.length < 3) return setError("Title must be at least 3 characters.");
+    if (!slug) return setError("Slug is required.");
+    if (!Number.isFinite(bounty) || bounty <= 0) return setError("Bounty must be a positive number.");
+    if (!Number.isFinite(rate) || rate <= 0) return setError("Rate per 1k views must be a positive number.");
 
     setIsSubmitting(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      const response = await fetch("/api/contracts", {
+      const res = await fetch("/api/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...formData,
-          contractAmount: parseFloat(formData.contractAmount),
-          ratePer1kViews: parseFloat(formData.ratePer1kViews),
-          creatorWallet: publicKey.toBase58(),
+          // API expects snake_case fields
+          title,
+          slug,
+          description: formData.description,
+          // requirements can be stored on campaign or omitted if you store on submission—send it if your API supports it
+          requirements: formData.requirements,
+          bounty_amount: bounty,
+          rate_per_1k_views: rate,
+          // if your API needs creator wallet, include it; if not, remove this (RLS + auth user preferred)
+          creator_wallet: publicKey.toBase58(),
         }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to create contract");
-      }
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Failed to create campaign");
 
-      const contract = await response.json();
-      // Redirect to funding page to deposit SOL
-      router.push(`/contracts/${contract.id}/fund`);
+      const created = data?.campaign ?? data;
+      const id = created?.id ?? created?.campaign?.id;
+      if (!id) throw new Error("Campaign created, but no id returned.");
+
+      setSuccess("Campaign created. Redirecting to fund…");
+      router.push(`/campaigns/${id}/fund`);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create contract"
-      );
+      setError(err instanceof Error ? err.message : "Failed to create campaign");
     } finally {
       setIsSubmitting(false);
     }
@@ -63,9 +97,7 @@ export default function CreateContractPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600">
-          Please connect your wallet to create a contract
-        </p>
+        <p className="text-gray-600">Please sign in to create a campaign.</p>
       </div>
     );
   }
@@ -74,109 +106,89 @@ export default function CreateContractPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Create New Contract
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Set up a contract for UGC creators
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">Create New Campaign</h1>
+          <p className="text-gray-600 mt-2">Set up a campaign for UGC creators</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-lg shadow p-6 space-y-6"
-        >
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
+          {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
+          {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">{success}</div>}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
             <input
               type="text"
               required
               className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
               value={formData.title}
-              onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
-              }
+              onChange={(e) => onTitleChange(e.target.value)}
               placeholder="e.g., Product Review Campaign"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Slug</label>
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+              value={formData.slug}
+              onChange={(e) => setFormData({ ...formData, slug: slugify(e.target.value) })}
+              placeholder="product-review-campaign"
+            />
+            <p className="text-xs text-gray-500 mt-1">Auto-filled from title; you can edit.</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
               required
               rows={4}
               className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe what creators need to do..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Requirements
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
             <textarea
               required
               rows={3}
               className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
               value={formData.requirements}
-              onChange={(e) =>
-                setFormData({ ...formData, requirements: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
               placeholder="e.g., Feature our product for at least 10 seconds, mention our brand name..."
             />
-            <p className="text-sm text-gray-500 mt-1">
-              These requirements will be used by AI to validate submissions
-            </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Amount (SOL)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Bounty Amount (SOL)</label>
               <input
+                inputMode="decimal"
                 type="number"
                 required
-                step="0.01"
-                min="0.01"
+                step="0.000001"
+                min="0.000001"
                 className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
-                value={formData.contractAmount}
-                onChange={(e) =>
-                  setFormData({ ...formData, contractAmount: e.target.value })
-                }
-                placeholder="10.00"
+                value={formData.bountyAmount}
+                onChange={(e) => setFormData({ ...formData, bountyAmount: e.target.value })}
+                placeholder="10.000000"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rate per 1k Views (SOL)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Rate per 1k Views (SOL)</label>
               <input
+                inputMode="decimal"
                 type="number"
                 required
-                step="0.01"
-                min="0.01"
+                step="0.000001"
+                min="0.000001"
                 className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
                 value={formData.ratePer1kViews}
-                onChange={(e) =>
-                  setFormData({ ...formData, ratePer1kViews: e.target.value })
-                }
-                placeholder="0.50"
+                onChange={(e) => setFormData({ ...formData, ratePer1kViews: e.target.value })}
+                placeholder="0.500000"
               />
             </div>
           </div>
@@ -194,7 +206,7 @@ export default function CreateContractPage() {
               disabled={isSubmitting}
               className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Creating..." : "Create Contract"}
+              {isSubmitting ? "Creating..." : "Create Campaign"}
             </button>
           </div>
         </form>
