@@ -42,9 +42,11 @@ export async function POST(
     for (const s of subs || []) {
       try {
         const views = await fetchViews(s.video_url);
+        
+        
         const { error: ue } = await supabase
           .from("submissions")
-          .update({ view_count: views, updated_at: new Date().toISOString() })
+          .update({ view_count: views, updated_at: new Date().toISOString()})
           .eq("id", s.id);
         if (!ue) updated++;
       } catch {
