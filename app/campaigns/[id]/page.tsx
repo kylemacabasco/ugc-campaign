@@ -23,7 +23,7 @@ export default function CampaignDetailPage() {
     const fetchCampaign = async () => {
       try {
         const response = await fetch(`/api/campaigns/${params.id}`);
-        
+
         if (!response.ok) {
           throw new Error("Campaign not found");
         }
@@ -31,7 +31,9 @@ export default function CampaignDetailPage() {
         const data = await response.json();
         setCampaign(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load campaign");
+        setError(
+          err instanceof Error ? err.message : "Failed to load campaign"
+        );
       } finally {
         setLoading(false);
       }
@@ -45,7 +47,7 @@ export default function CampaignDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading campaign...</div>
+        <div className="text-xl animate-pulse">Loading campaign…</div>
       </div>
     );
   }
@@ -53,7 +55,9 @@ export default function CampaignDetailPage() {
   if (error || !campaign) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-xl text-red-500">{error || "Campaign not found"}</div>
+        <div className="text-xl text-red-500">
+          {error || "Campaign not found"}
+        </div>
         <button
           onClick={() => router.push("/")}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -85,7 +89,9 @@ export default function CampaignDetailPage() {
         {/* Campaign Details */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-start justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">{campaign.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {campaign.title}
+            </h1>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                 campaign.status
@@ -105,9 +111,11 @@ export default function CampaignDetailPage() {
               </div>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-500 mb-1">Rate per 1k Views</div>
+              <div className="text-sm text-gray-500 mb-1">
+                Rate per 1k Views
+              </div>
               <div className="text-2xl font-bold text-gray-900">
-                {campaign.rate_per_1k_views} SOL
+                ${campaign.rate_per_1k_views} USDC
               </div>
             </div>
           </div>
@@ -116,4 +124,3 @@ export default function CampaignDetailPage() {
     </div>
   );
 }
-
