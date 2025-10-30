@@ -90,7 +90,6 @@ export async function GET(request: NextRequest) {
       ? new URL(request.url)
       : { searchParams: new URLSearchParams() };
     const status = searchParams.get("status");
-    const creator_wallet = searchParams.get("creator_wallet");
 
     let query = supabase
       .from("campaigns")
@@ -102,20 +101,6 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       query = query.eq("status", status);
-    }
-
-    if (creator_wallet) {
-      const { data: user } = await supabase
-        .from("users")
-        .select("id")
-        .eq("wallet_address", creator_wallet)
-        .maybeSingle();
-
-      if (user) {
-        query = query.eq("creator_id", user.id);
-      } else {
-        return NextResponse.json([]);
-      }
     }
 
     const { data, error } = await query;
