@@ -33,6 +33,9 @@ export default function CampaignDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   
   // Check if current user is the campaign owner
   const isOwner = user && campaign && user.id === campaign.creator_id;
@@ -119,6 +122,47 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const handleSubmitVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!videoUrl.trim() || !params.id) return;
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/submissions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          campaign_id: params.id,
+          video_url: videoUrl.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit video");
+      }
+
+      // Refetch submissions to show the new one
+      const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
+      if (submissionsResponse.ok) {
+        const submissionsData = await submissionsResponse.json();
+        setSubmissions(submissionsData);
+      }
+
+      // Reset form and close modal
+      setVideoUrl("");
+      setShowSubmitModal(false);
+      alert("Video submitted successfully!");
+    } catch (err) {
+      console.error("Error submitting video:", err);
+      alert(err instanceof Error ? err.message : "Failed to submit video. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -190,15 +234,25 @@ export default function CampaignDetailPage() {
             <h2 className="text-2xl font-bold text-gray-900">
               Submissions ({submissions.length})
             </h2>
-            {submissions.length > 0 && (
-              <button
-                onClick={handleRefreshViews}
-                disabled={refreshing}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-              >
-                {refreshing ? "Refreshing…" : "Refresh Views"}
-              </button>
-            )}
+            <div className="flex gap-3">
+              {campaign.status === "active" && (
+                <button
+                  onClick={() => setShowSubmitModal(true)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium"
+                >
+                  Submit Video
+                </button>
+              )}
+              {submissions.length > 0 && (
+                <button
+                  onClick={handleRefreshViews}
+                  disabled={refreshing}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                >
+                  {refreshing ? "Refreshing…" : "Refresh Views"}
+                </button>
+              )}
+            </div>
           </div>
 
           {submissions.length === 0 ? (
@@ -248,6 +302,60 @@ export default function CampaignDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Submit Video Modal */}
+        {showSubmitModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Submit Your Video
+              </h3>
+              <form onSubmit={handleSubmitVideo}>
+                <div className="mb-4">
+                  <label
+                    htmlFor="videoUrl"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Video URL
+                  </label>
+                  <input
+                    type="url"
+                    id="videoUrl"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Enter the URL of your TikTok, YouTube, or other video
+                  </p>
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSubmitModal(false);
+                      setVideoUrl("");
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting || !videoUrl.trim()}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                  >
+                    {submitting ? "Submitting..." : "Submit"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
