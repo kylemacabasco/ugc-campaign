@@ -9,20 +9,6 @@ export async function POST(
   try {
     const { id } = await params;
 
-    // Get campaign to fetch the rate_per_1k_views
-    const { data: campaign, error: campaignError } = await supabase
-      .from("campaigns")
-      .select("rate_per_1k_views")
-      .eq("id", id)
-      .single();
-
-    if (campaignError || !campaign) {
-      return NextResponse.json(
-        { error: "Campaign not found" },
-        { status: 404 }
-      );
-    }
-
     // Fetch all submissions for this campaign
     const { data: subs, error: se } = await supabase
       .from("submissions")
@@ -57,17 +43,10 @@ export async function POST(
       try {
         const views = await fetchViews(s.video_url);
         
-        // Calculate earned amount: (views / 1000) * rate_per_1k_views
-        const earnedAmount = (views / 1000) * campaign.rate_per_1k_views;
         
         const { error: ue } = await supabase
           .from("submissions")
-          .update({ 
-            view_count: views,
-            earned_amount: earnedAmount,
-            status: "approved", // Auto-approve when views are successfully fetched
-            updated_at: new Date().toISOString() 
-          })
+          .update({ view_count: views, updated_at: new Date().toISOString()})
           .eq("id", s.id);
         if (!ue) updated++;
       } catch {
