@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("submissions")
-      .select("*")
+      .select("*, users(wallet_address, username)")
       .order("created_at", { ascending: false });
 
     if (campaign_id) {

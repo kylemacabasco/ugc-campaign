@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     // Get all active campaigns with their rate_per_1k_views
     const { data: campaigns, error: campaignsError } = await supabase
       .from("campaigns")
-      .select("id, rate_per_1k_views")
+      .select("id, campaign_amount, rate_per_1k_views")
       .eq("status", "active");
 
     if (campaignsError) {
@@ -78,6 +78,41 @@ export async function GET(request: NextRequest) {
           } catch (err) {
             console.error(`Error updating submission ${submission.id}:`, err);
             // Continue with next submission
+          }
+        }
+
+        // Check if campaign has reached its view goal
+        const { data: updatedSubmissions } = await supabase
+          .from("submissions")
+          .select("view_count")
+          .eq("campaign_id", campaign.id);
+
+        if (updatedSubmissions) {
+          const totalViews = updatedSubmissions.reduce(
+            (sum, s) => sum + (s.view_count || 0),
+            0
+          );
+          
+          // Calculate target views: campaign_amount / rate_per_1k_views * 1000
+          // Protect against division by zero
+          if (campaign.rate_per_1k_views <= 0) {
+            console.warn(`Campaign ${campaign.id} has invalid rate_per_1k_views: ${campaign.rate_per_1k_views}`);
+            continue;
+          }
+          
+          const targetViews = (campaign.campaign_amount / campaign.rate_per_1k_views) * 1000;
+
+          // If goal reached, auto-end the campaign
+          if (totalViews >= targetViews) {
+            const { error: endError } = await supabase
+              .from("campaigns")
+              .update({ status: "ended" })
+              .eq("id", campaign.id)
+              .eq("status", "active"); // Only if still active (prevents race condition)
+            
+            if (!endError) {
+              console.log(`Auto-ended campaign ${campaign.id} (reached ${totalViews}/${targetViews} views)`);
+            }
           }
         }
       } catch (err) {
