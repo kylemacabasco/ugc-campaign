@@ -159,10 +159,15 @@ export default function CampaignDetailPage() {
         }),
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit video");
+        throw new Error(data?.error || "Failed to submit video");
       }
+
+      const validationResult = data?.validation as
+        | { valid: boolean; explanation: string }
+        | undefined;
+      const validationError = data?.validationError as string | undefined;
 
       // Refetch submissions to show the new one
       const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
@@ -174,7 +179,19 @@ export default function CampaignDetailPage() {
       // Reset form and close modal
       setVideoUrl("");
       setShowSubmitModal(false);
-      alert("Video submitted successfully!");
+
+      if (validationResult) {
+        const message = validationResult.valid
+          ? `Video approved! ${validationResult.explanation}`
+          : `Video rejected: ${validationResult.explanation}`;
+        alert(message);
+      } else if (validationError) {
+        alert(
+          `Video submitted, but automatic review failed. Status is pending. Reason: ${validationError}`
+        );
+      } else {
+        alert("Video submitted successfully and is pending review.");
+      }
     } catch (err) {
       console.error("Error submitting video:", err);
       alert(err instanceof Error ? err.message : "Failed to submit video. Please try again.");

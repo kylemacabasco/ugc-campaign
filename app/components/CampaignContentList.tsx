@@ -20,6 +20,17 @@ export default function CampaignContentList({ campaignId }: { campaignId: string
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getSubmissionStatusClasses = (status: Submission["status"]) => {
+    switch (status) {
+      case "approved":
+        return "bg-emerald-100 text-emerald-800";
+      case "rejected":
+        return "bg-rose-100 text-rose-800";
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
+  };
+
   // Fetch submissions via short route: /api/campaigns/[id]?include=submissions
   useEffect(() => {
     let mounted = true;
@@ -153,9 +164,18 @@ export default function CampaignContentList({ campaignId }: { campaignId: string
                   <div className="text-sm text-gray-700">
                     Views: <span className="font-semibold">{s.view_count ?? 0}</span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    Status: {s.status ?? "pending"} •{" "}
-                    {s.updated_at ? new Date(s.updated_at).toLocaleString() : "—"}
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                    <span>Status:</span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-semibold capitalize ${getSubmissionStatusClasses(
+                        s.status
+                      )}`}
+                    >
+                      {s.status ?? "pending"}
+                    </span>
+                    <span className="text-[11px] text-gray-400">
+                      {s.updated_at ? new Date(s.updated_at).toLocaleString() : "—"}
+                    </span>
                   </div>
                 </div>
 
