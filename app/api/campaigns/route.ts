@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
         .from("users")
         .select("id")
         .eq("wallet_address", creator_wallet)
-        .single();
+        .maybeSingle();
 
       if (user) {
         query = query.eq("creator_id", user.id);
