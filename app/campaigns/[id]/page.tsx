@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuth } from "@/app/providers/AuthProvider";
 import Link from "next/link";
 
@@ -30,6 +31,7 @@ interface Submission {
 export default function CampaignDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { publicKey } = useWallet();
   const { user } = useAuth();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -40,8 +42,10 @@ export default function CampaignDetailPage() {
   const [videoUrl, setVideoUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   
-  // Check if current user is the campaign owner
+  // Check if current user is the campaign creator
   const isOwner = user && campaign && user.id === campaign.creator_id;
+  // Check if user can submit (authenticated, not creator, campaign is active)
+  const canSubmit = user && publicKey && !isOwner && campaign?.status === "active";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,6 +133,18 @@ export default function CampaignDetailPage() {
     e.preventDefault();
     if (!videoUrl.trim() || !params.id) return;
 
+    // Check if wallet is connected
+    if (!publicKey) {
+      alert("Please connect your wallet to submit a video");
+      return;
+    }
+
+    // Check if user is the creator
+    if (isOwner) {
+      alert("Campaign creators cannot submit to their own campaigns");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const response = await fetch("/api/submissions", {
@@ -138,6 +154,7 @@ export default function CampaignDetailPage() {
         },
         body: JSON.stringify({
           campaign_id: params.id,
+          submitter_wallet: publicKey.toBase58(),
           video_url: videoUrl.trim(),
         }),
       });
@@ -249,7 +266,7 @@ export default function CampaignDetailPage() {
               Submissions ({submissions.length})
             </h2>
             <div className="flex gap-3">
-              {campaign.status === "active" && (
+              {canSubmit && (
                 <button
                   onClick={() => setShowSubmitModal(true)}
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium"
@@ -324,6 +341,20 @@ export default function CampaignDetailPage() {
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
                 Submit Your Video
               </h3>
+              {!publicKey && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    Please connect your wallet to submit a video
+                  </p>
+                </div>
+              )}
+              {isOwner && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">
+                    Campaign creators cannot submit to their own campaigns
+                  </p>
+                </div>
+              )}
               <form onSubmit={handleSubmitVideo}>
                 <div className="mb-4">
                   <label
@@ -340,9 +371,10 @@ export default function CampaignDetailPage() {
                     placeholder="https://www.youtube.com/watch?v=..."
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     required
+                    disabled={!publicKey || !!isOwner}
                   />
                   <p className="text-xs text-gray-500 mt-2">
-                    Enter the URL of your TikTok, YouTube, or other video
+                    Enter the URL of your YouTube video
                   </p>
                 </div>
 
@@ -360,7 +392,7 @@ export default function CampaignDetailPage() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting || !videoUrl.trim()}
+                    disabled={submitting || !videoUrl.trim() || !publicKey || !!isOwner}
                     className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
                   >
                     {submitting ? "Submitting..." : "Submit"}
