@@ -40,7 +40,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, updater_wallet } = body;
+    const { status, updater_wallet, funding_tx_signature, funded_at } = body;
 
     if (!updater_wallet) {
       return NextResponse.json(
@@ -80,16 +80,42 @@ export async function PATCH(
     // Build update object
     const updates: any = {};
     if (status) {
-      if (!["inactive", "active", "completed", "cancelled"].includes(status)) {
+      if (!["draft", "active", "ended", "cancelled"].includes(status)) {
         return NextResponse.json(
           {
             error:
-              "Invalid status. Must be: inactive, active, completed, or cancelled",
+              "Invalid status. Must be: draft, active, ended, or cancelled",
           },
           { status: 400 }
         );
       }
       updates.status = status;
+    }
+
+    // Add funding transaction fields if provided
+    if (funding_tx_signature) {
+      // Validate funding transaction signature format
+      if (typeof funding_tx_signature !== 'string' || funding_tx_signature.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Invalid funding_tx_signature: must be a non-empty string" },
+          { status: 400 }
+        );
+      }
+      
+      // Validate Solana transaction signature format (base58, typically 87-88 chars)
+      const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{87,88}$/;
+      if (!base58Regex.test(funding_tx_signature.trim())) {
+        return NextResponse.json(
+          { error: "Invalid funding_tx_signature: must be a valid Solana transaction signature" },
+          { status: 400 }
+        );
+      }
+      
+      updates.funding_tx_signature = funding_tx_signature.trim();
+    }
+
+    if (funded_at) {
+      updates.funded_at = funded_at;
     }
 
     if (Object.keys(updates).length === 0) {

@@ -19,11 +19,23 @@ interface CampaignCardProps {
 
 export default function CampaignCard({ campaign, currentUserId }: CampaignCardProps) {
 
-  // Calculate completion status from database status field
-  const isCompleted = campaign.status === 'completed';
-  
   // Check if current user is the campaign owner
   const isOwner = currentUserId && campaign.creator_id === currentUserId;
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      case "ended":
+        return "bg-blue-100 text-blue-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-lg shadow hover:shadow-lg transition-shadow p-6 border border-slate-200 dark:border-slate-800">
@@ -32,15 +44,11 @@ export default function CampaignCard({ campaign, currentUserId }: CampaignCardPr
           {campaign.title}
         </h2>
         <span
-          className={`px-3 py-1 text-xs font-medium rounded-full ${
-            isCompleted
-              ? "bg-green-100 text-green-800"
-              : campaign.status === 'active'
-              ? "bg-blue-100 text-blue-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
+          className={`px-3 py-1 text-xs font-medium rounded-full uppercase ${getStatusStyle(
+            campaign.status
+          )}`}
         >
-          {isCompleted ? "Completed" : campaign.status}
+          {campaign.status}
         </span>
       </div>
 
