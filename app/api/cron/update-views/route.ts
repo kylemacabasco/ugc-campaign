@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
         for (const submission of submissions) {
           try {
             const views = await fetchViews(submission.video_url);
+            
             const { error: ue } = await supabase
               .from("submissions")
               .update({
