@@ -39,12 +39,12 @@ export default function CampaignCard({ campaign, currentUserId }: CampaignCardPr
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-lg shadow hover:shadow-lg transition-shadow p-6 border border-slate-200 dark:border-slate-800">
-      <div className="flex justify-between items-start mb-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
+      <div className="flex justify-between items-start mb-4 gap-2">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100 line-clamp-2 flex-1 min-w-0">
           {campaign.title}
         </h2>
         <span
-          className={`px-3 py-1 text-xs font-medium rounded-full uppercase ${getStatusStyle(
+          className={`px-3 py-1 text-xs font-medium rounded-full uppercase whitespace-nowrap ${getStatusStyle(
             campaign.status
           )}`}
         >

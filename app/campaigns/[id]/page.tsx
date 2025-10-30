@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/app/providers/AuthProvider";
+import Link from "next/link";
 
 interface Campaign {
   id: string;
@@ -10,6 +12,7 @@ interface Campaign {
   campaign_amount: number;
   rate_per_1k_views: number;
   status: string;
+  creator_id: string;
 }
 
 interface Submission {
@@ -24,11 +27,15 @@ interface Submission {
 export default function CampaignDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Check if current user is the campaign owner
+  const isOwner = user && campaign && user.id === campaign.creator_id;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,17 +139,29 @@ export default function CampaignDetailPage() {
       <div className="max-w-4xl mx-auto">
         {/* Campaign Details */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-start justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {campaign.title}
-            </h1>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                campaign.status
-              )}`}
-            >
-              {campaign.status.toUpperCase()}
-            </span>
+          <div className="flex items-start justify-between mb-4 gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold text-gray-900 break-words">
+                {campaign.title}
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              {isOwner && (
+                <Link
+                  href={`/campaigns/${params.id}/edit`}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium whitespace-nowrap"
+                >
+                  Edit
+                </Link>
+              )}
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(
+                  campaign.status
+                )}`}
+              >
+                {campaign.status.toUpperCase()}
+              </span>
+            </div>
           </div>
 
           <p className="text-gray-600 mb-6">{campaign.description}</p>
@@ -177,7 +196,7 @@ export default function CampaignDetailPage() {
                 disabled={refreshing}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
               >
-                {refreshing ? "Refreshing..." : "Refresh Views"}
+                {refreshing ? "Refreshing…" : "Refresh Views"}
               </button>
             )}
           </div>

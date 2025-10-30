@@ -40,7 +40,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, updater_wallet, funding_tx_signature, funded_at } = body;
+    const { status, updater_wallet, funding_tx_signature, funded_at, title, description, asset_folder_url } = body;
 
     if (!updater_wallet) {
       return NextResponse.json(
@@ -116,6 +116,50 @@ export async function PATCH(
 
     if (funded_at) {
       updates.funded_at = funded_at;
+    }
+
+    // Allow updating campaign details (but not financial terms)
+    if (title !== undefined) {
+      if (!title || title.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Title cannot be empty" },
+          { status: 400 }
+        );
+      }
+      if (title.trim().length > 200) {
+        return NextResponse.json(
+          { error: "Title cannot exceed 200 characters" },
+          { status: 400 }
+        );
+      }
+      updates.title = title.trim();
+    }
+
+    if (description !== undefined) {
+      const trimmedDesc = description ? description.trim() : null;
+      if (trimmedDesc && trimmedDesc.length > 5000) {
+        return NextResponse.json(
+          { error: "Description cannot exceed 5000 characters" },
+          { status: 400 }
+        );
+      }
+      updates.description = trimmedDesc;
+    }
+
+    if (asset_folder_url !== undefined) {
+      const trimmedUrl = asset_folder_url ? asset_folder_url.trim() : null;
+      // Basic URL validation if provided
+      if (trimmedUrl) {
+        try {
+          new URL(trimmedUrl);
+        } catch {
+          return NextResponse.json(
+            { error: "Asset folder URL must be a valid URL" },
+            { status: 400 }
+          );
+        }
+      }
+      updates.asset_folder_url = trimmedUrl;
     }
 
     if (Object.keys(updates).length === 0) {
