@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all active campaigns
+    // Get all active campaigns with their rate_per_1k_views
     const { data: campaigns, error: campaignsError } = await supabase
       .from("campaigns")
-      .select("id")
+      .select("id, rate_per_1k_views")
       .eq("status", "active");
 
     if (campaignsError) {
@@ -58,15 +58,19 @@ export async function GET(request: NextRequest) {
 
         if (!submissions || submissions.length === 0) continue;
 
-        // Update each submission's view count
+        // Update each submission's view count, earned amount, and status
         for (const submission of submissions) {
           try {
             const views = await fetchViews(submission.video_url);
+            
+            // Calculate earned amount: (views / 1000) * rate_per_1k_views
+            const earnedAmount = (views / 1000) * campaign.rate_per_1k_views;
             
             const { error: ue } = await supabase
               .from("submissions")
               .update({
                 view_count: views,
+                earned_amount: earnedAmount,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", submission.id);
