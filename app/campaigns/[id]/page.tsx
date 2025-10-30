@@ -13,6 +13,9 @@ interface Campaign {
   rate_per_1k_views: number;
   status: string;
   creator_id: string;
+  metadata?: {
+    requirements?: string;
+  };
 }
 
 interface Submission {
@@ -209,6 +212,17 @@ export default function CampaignDetailPage() {
           </div>
 
           <p className="text-gray-600 mb-6">{campaign.description}</p>
+
+          {campaign.metadata?.requirements && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Requirements
+              </h3>
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {campaign.metadata.requirements}
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
