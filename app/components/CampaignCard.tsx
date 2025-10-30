@@ -14,35 +14,19 @@ export interface ApiCampaign {
 
 interface CampaignCardProps {
   campaign: ApiCampaign;
+  currentUserId?: string;
 }
 
-export default function CampaignCard({ campaign }: CampaignCardProps) {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInHours = diffInMs / (1000 * 60 * 60);
-    const diffInDays = diffInHours / 24;
-
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-      return `${diffInMinutes}m ago`;
-    } else if (diffInHours < 24) {
-      return `${Math.floor(diffInHours)}h ago`;
-    } else if (diffInDays < 7) {
-      return `${Math.floor(diffInDays)}d ago`;
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-  };
+export default function CampaignCard({ campaign, currentUserId }: CampaignCardProps) {
 
   // Calculate completion status from database status field
   const isCompleted = campaign.status === 'completed';
-
-  const cardClassName = "bg-white dark:bg-slate-900 rounded-lg shadow hover:shadow-lg transition-shadow p-6 block border border-slate-200 dark:border-slate-800";
   
-  const cardContent = (
-    <>
+  // Check if current user is the campaign owner
+  const isOwner = currentUserId && campaign.creator_id === currentUserId;
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow hover:shadow-lg transition-shadow p-6 border border-slate-200 dark:border-slate-800">
       <div className="flex justify-between items-start mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100">
           {campaign.title}
@@ -81,17 +65,14 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
           </span>
         </div>
 
-        <div className="pt-2 mt-2 border-t border-slate-200 dark:border-slate-700 text-xs text-gray-400 dark:text-slate-500">
-          Last updated {formatDate(campaign.updated_at)}
-        </div>
+        {/* Action button */}
+        <Link href={`/campaigns/${campaign.id}`} className="block w-full mt-4">
+          <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+            {isOwner ? "View your Campaign" : "Submit Content"}
+          </button>
+        </Link>
       </div>
-    </>
-  );
-
-  return (
-    <Link href={`/campaigns/${campaign.id}`} className={cardClassName}>
-      {cardContent}
-    </Link>
+    </div>
   );
 }
 
