@@ -287,9 +287,9 @@ export default function CampaignDetailPage() {
           </div>
 
           {submissions.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p>No submissions yet</p>
-              <p className="text-sm mt-2">Be the first to submit content!</p>
+            <div className="text-center py-12 text-gray-600">
+              <p className="text-lg">No submissions yet</p>
+              <p className="text-base mt-2">Be the first to submit content!</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -308,7 +308,7 @@ export default function CampaignDetailPage() {
                       >
                         {submission.video_url}
                       </a>
-                      <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                      <div className="flex gap-4 mt-2 text-base text-gray-700">
                         <span>Views: {submission.view_count.toLocaleString()}</span>
                         <span>Earned: ${submission.earned_amount.toFixed(2)} USDC</span>
                         <span>
@@ -343,14 +343,14 @@ export default function CampaignDetailPage() {
               </h3>
               {!publicKey && (
                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
+                  <p className="text-base text-yellow-900 font-medium">
                     Please connect your wallet to submit a video
                   </p>
                 </div>
               )}
               {isOwner && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-800">
+                  <p className="text-base text-red-900 font-medium">
                     Campaign creators cannot submit to their own campaigns
                   </p>
                 </div>
@@ -369,11 +369,11 @@ export default function CampaignDetailPage() {
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
                     placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-gray-600"
                     required
                     disabled={!publicKey || !!isOwner}
                   />
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-sm text-gray-600 mt-2">
                     Enter the URL of your YouTube video
                   </p>
                 </div>
