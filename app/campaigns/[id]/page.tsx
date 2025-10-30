@@ -10,11 +10,6 @@ interface Campaign {
   campaign_amount: number;
   rate_per_1k_views: number;
   status: string;
-  created_at: string;
-  creator: {
-    wallet_address: string;
-    username?: string;
-  };
 }
 
 export default function CampaignDetailPage() {
@@ -73,11 +68,11 @@ export default function CampaignDetailPage() {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800";
-      case "draft":
-        return "bg-yellow-100 text-yellow-800";
-      case "ended":
-        return "bg-gray-100 text-gray-800";
       case "inactive":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-blue-100 text-blue-800";
+      case "cancelled":
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -87,8 +82,8 @@ export default function CampaignDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        {/* Campaign Details */}
+        <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-start justify-between mb-4">
             <h1 className="text-3xl font-bold text-gray-900">{campaign.title}</h1>
             <span
@@ -100,9 +95,9 @@ export default function CampaignDetailPage() {
             </span>
           </div>
 
-          <p className="text-gray-600 mb-4">{campaign.description}</p>
+          <p className="text-gray-600 mb-6">{campaign.description}</p>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="text-sm text-gray-500 mb-1">Total Budget</div>
               <div className="text-2xl font-bold text-gray-900">
@@ -115,23 +110,6 @@ export default function CampaignDetailPage() {
                 {campaign.rate_per_1k_views} SOL
               </div>
             </div>
-          </div>
-
-          <div className="border-t pt-4">
-            <div className="text-sm text-gray-500">Created by</div>
-            <div className="text-gray-900 font-medium">
-              {campaign.creator.username || 
-                `${campaign.creator.wallet_address.slice(0, 4)}...${campaign.creator.wallet_address.slice(-4)}`}
-            </div>
-          </div>
-        </div>
-
-        {/* Submissions Section - Placeholder for PR #6 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Submissions</h2>
-          <div className="text-center py-12 text-gray-500">
-            <p>Submission display coming in next PR...</p>
-            <p className="text-sm mt-2">This will show all submitted content for this campaign</p>
           </div>
         </div>
       </div>
