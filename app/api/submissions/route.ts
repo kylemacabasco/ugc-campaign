@@ -14,6 +14,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate YouTube URL format
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[\w-]{11}/;
+    if (!youtubeRegex.test(video_url)) {
+      return NextResponse.json(
+        { error: "Invalid YouTube URL format" },
+        { status: 400 }
+      );
+    }
+
     // Get user by wallet
     const { data: user } = await supabase
       .from("users")
@@ -29,6 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify campaign exists and is active
+    // Only active campaigns accept submissions (inactive = not funded, completed/cancelled = ended)
     const { data: campaign } = await supabase
       .from("campaigns")
       .select("id, status")
