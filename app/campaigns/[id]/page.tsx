@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/providers/AuthProvider";
 import Link from "next/link";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Connection, Transaction, SystemProgram, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 interface Campaign {
   id: string;
@@ -13,6 +15,7 @@ interface Campaign {
   rate_per_1k_views: number;
   status: string;
   creator_id: string;
+  distributed: boolean;
 }
 
 interface Submission {
@@ -28,11 +31,14 @@ export default function CampaignDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { publicKey, signTransaction } = useWallet();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [distributing, setDistributing] = useState(false);
+  const [ending, setEnding] = useState(false);
   
   // Check if current user is the campaign owner
   const isOwner = user && campaign && user.id === campaign.creator_id;
@@ -119,6 +125,109 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const handleDistributePayouts = async () => {
+    if (!params.id || !publicKey || !signTransaction || !user) return;
+
+    const confirmed = confirm(
+      "Are you sure you want to distribute payouts? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    setDistributing(true);
+    try {
+      // Get approved submissions with earnings
+      const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
+      if (!submissionsResponse.ok) {
+        throw new Error("Failed to fetch submissions");
+      }
+      const allSubmissions: Submission[] = await submissionsResponse.json();
+      
+      // Filter approved submissions with earnings
+      const approvedSubmissions = allSubmissions.filter(
+        (s) => s.status === "approved" && s.earned_amount > 0
+      );
+
+      if (approvedSubmissions.length === 0) {
+        alert("No approved submissions with earnings to distribute");
+        return;
+      }
+
+      // For now, just use a simple alert - owner will manually send USDC
+      // In the future, we can integrate with Solana to automate this
+      const totalOwed = approvedSubmissions.reduce((sum, s) => sum + s.earned_amount, 0);
+      
+      alert(`Distribution Summary:\n\n${approvedSubmissions.length} creators to pay\nTotal: $${totalOwed.toFixed(2)} USDC\n\nPlease manually send USDC to each creator.\n\nOnce complete, the campaign will be marked as distributed.`);
+
+      // Mark as distributed
+      const response = await fetch(`/api/campaigns/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updater_wallet: user.wallet_address,
+          distributed: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark campaign as distributed");
+      }
+
+      // Refetch campaign
+      const campaignResponse = await fetch(`/api/campaigns/${params.id}`);
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json();
+        setCampaign(campaignData);
+      }
+
+      alert("Campaign marked as distributed!");
+    } catch (err) {
+      console.error("Error distributing payouts:", err);
+      alert(`Failed to distribute payouts: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setDistributing(false);
+    }
+  };
+
+  const handleEndCampaign = async () => {
+    if (!params.id || !user) return;
+
+    const confirmed = confirm(
+      "Are you sure you want to end this campaign? This will stop accepting new submissions and allow you to distribute payouts."
+    );
+    if (!confirmed) return;
+
+    setEnding(true);
+    try {
+      const response = await fetch(`/api/campaigns/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updater_wallet: user.wallet_address,
+          status: "ended",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to end campaign");
+      }
+
+      // Refetch campaign
+      const campaignResponse = await fetch(`/api/campaigns/${params.id}`);
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json();
+        setCampaign(campaignData);
+      }
+
+      alert("Campaign ended successfully!");
+    } catch (err) {
+      console.error("Error ending campaign:", err);
+      alert(`Failed to end campaign: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setEnding(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -146,6 +255,24 @@ export default function CampaignDetailPage() {
               </h1>
             </div>
             <div className="flex items-center gap-3">
+              {isOwner && campaign.status === "active" && (
+                <button
+                  onClick={handleEndCampaign}
+                  disabled={ending}
+                  className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium whitespace-nowrap"
+                >
+                  {ending ? "Ending…" : "End Campaign"}
+                </button>
+              )}
+              {isOwner && campaign.status === "ended" && !campaign.distributed && (
+                <button
+                  onClick={handleDistributePayouts}
+                  disabled={distributing}
+                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium whitespace-nowrap"
+                >
+                  {distributing ? "Distributing…" : "Distribute Payouts"}
+                </button>
+              )}
               {isOwner && (
                 <Link
                   href={`/campaigns/${params.id}/edit`}
@@ -153,6 +280,11 @@ export default function CampaignDetailPage() {
                 >
                   Edit
                 </Link>
+              )}
+              {campaign.distributed && (
+                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium whitespace-nowrap">
+                  DISTRIBUTED
+                </span>
               )}
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(

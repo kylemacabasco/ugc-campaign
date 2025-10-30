@@ -40,7 +40,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, updater_wallet, funding_tx_signature, funded_at, title, description, asset_folder_url } = body;
+    const { status, updater_wallet, funding_tx_signature, funded_at, title, description, asset_folder_url, distributed } = body;
 
     if (!updater_wallet) {
       return NextResponse.json(
@@ -160,6 +160,20 @@ export async function PATCH(
         }
       }
       updates.asset_folder_url = trimmedUrl;
+    }
+
+    // Handle distribution marking
+    if (distributed !== undefined) {
+      if (typeof distributed !== "boolean") {
+        return NextResponse.json(
+          { error: "distributed must be a boolean" },
+          { status: 400 }
+        );
+      }
+      updates.distributed = distributed;
+      if (distributed) {
+        updates.distributed_at = new Date().toISOString();
+      }
     }
 
     if (Object.keys(updates).length === 0) {
