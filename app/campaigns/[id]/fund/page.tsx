@@ -129,11 +129,6 @@ export default function FundCampaignPage() {
       if (!updateResponse.ok) {
         throw new Error("Failed to activate campaign");
       }
-
-      // Redirect to campaign page after 2 seconds
-      setTimeout(() => {
-        router.push(`/campaigns/${params.id}`);
-      }, 2000);
     } catch (err) {
       console.error("Error funding campaign:", err);
       setError(
@@ -234,13 +229,13 @@ export default function FundCampaignPage() {
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
               <div className="text-sm text-blue-700 mb-1">Campaign Budget</div>
               <div className="text-3xl font-bold text-blue-900">
                 {campaign.campaign_amount} SOL
               </div>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 text-center">
               <div className="text-sm text-purple-700 mb-1">
                 Rate per 1k Views
               </div>
@@ -252,51 +247,61 @@ export default function FundCampaignPage() {
 
           {/* Alert Messages */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-center">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-              <p className="font-medium">{success}</p>
+            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-center">
+              <p className="font-medium mb-3">{success}</p>
               {txSignature && (
                 <a
                   href={`https://explorer.solana.com/tx/${txSignature}?cluster=mainnet`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-green-800 hover:text-green-900 hover:underline text-sm block mt-2 font-medium"
+                  className="text-green-800 hover:text-green-900 hover:underline text-sm inline-block mb-3 font-medium"
                 >
                   View transaction on Solana Explorer →
                 </a>
               )}
-              <p className="text-sm mt-2">Redirecting to campaign page...</p>
+              <div>
+                <button
+                  onClick={() => router.push(`/campaigns/${params.id}`)}
+                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
+                >
+                  Go to Campaign Page
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Funding Information */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-semibold text-yellow-800 mb-2">
-              💡 How it works:
-            </h3>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>
-                • You will send {campaign.campaign_amount} SOL to fund this
-                campaign
-              </li>
-              <li>• Once funded, your campaign will become active</li>
-              <li>
-                • Creators can submit content and earn based on their views
-              </li>
-              <li>
-                • Payouts are calculated at {campaign.rate_per_1k_views} SOL
-                per 1,000 views
-              </li>
-            </ul>
-          </div>
+          {/* Funding Information - Only show if not successful */}
+          {!success && (
+            <>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-center">
+                <h3 className="text-sm font-semibold text-yellow-800 mb-2">
+                  💡 How it works:
+                </h3>
+                <ul className="text-sm text-yellow-700 space-y-1 text-left inline-block">
+                  <li>
+                    • You will send {campaign.campaign_amount} SOL to fund this
+                    campaign
+                  </li>
+                  <li>
+                    • Once funded, your campaign will become active</li>
+                  <li>
+                    • Creators can submit content and earn based on their views
+                  </li>
+                  <li>
+                    • Payouts are calculated at {campaign.rate_per_1k_views} SOL
+                    per 1,000 views
+                  </li>
+                </ul>
+              </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4">
+              {/* Action Buttons */}
+              <div className="flex gap-4">
             <button
               onClick={() => router.back()}
               className="flex-1 px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium"
@@ -323,6 +328,8 @@ export default function FundCampaignPage() {
               )}
             </button>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
