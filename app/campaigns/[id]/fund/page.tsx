@@ -329,7 +329,7 @@ export default function FundCampaignPage() {
           {/* Funding Information - Only show if not successful */}
           {!success && (
             <>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-center">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <h3 className="text-sm font-semibold text-yellow-800 mb-2">
                   💡 How it works:
                 </h3>
