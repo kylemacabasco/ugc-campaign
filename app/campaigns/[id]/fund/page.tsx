@@ -89,7 +89,20 @@ export default function FundCampaignPage() {
         throw new Error("Treasury address not configured. Please set NEXT_PUBLIC_TREASURY_ADDRESS in your environment variables.");
       }
       
-      const treasuryPublicKey = new PublicKey(treasuryAddress);
+      // Validate treasury address format (Issue #2)
+      let treasuryPublicKey: PublicKey;
+      try {
+        treasuryPublicKey = new PublicKey(treasuryAddress);
+        // Validate it's on the correct curve
+        if (!PublicKey.isOnCurve(treasuryPublicKey.toBytes())) {
+          throw new Error("Invalid treasury address: not on ed25519 curve");
+        }
+      } catch (validationError) {
+        console.error("Treasury address validation failed:", validationError);
+        throw new Error(
+          `Invalid treasury address format. Please contact support. Address: ${treasuryAddress.substring(0, 8)}...`
+        );
+      }
       
       // Create transaction to send SOL
       const lamports = Math.floor(campaign.campaign_amount * LAMPORTS_PER_SOL);
@@ -110,24 +123,61 @@ export default function FundCampaignPage() {
       // Send transaction
       const signature = await sendTransaction(transaction, connection);
       
+      // Store transaction signature immediately (Issue #3 - Part 1)
+      // This ensures we have a record even if confirmation or status update fails
+      try {
+        const storeTxResponse = await fetch(`/api/campaigns/${params.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            funding_tx_signature: signature,
+            funded_at: new Date().toISOString(),
+            updater_wallet: publicKey.toBase58(),
+          }),
+        });
+
+        if (!storeTxResponse.ok) {
+          console.warn("Failed to store transaction signature, but continuing with confirmation...");
+        }
+      } catch (storeTxError) {
+        console.warn("Error storing tx signature:", storeTxError);
+      }
+
+      setTxSignature(signature);
+      
       // Wait for confirmation
       await connection.confirmTransaction(signature, "confirmed");
 
-      setTxSignature(signature);
       setSuccess(`Transaction confirmed successfully!`);
 
-      // Update campaign status to active
-      const updateResponse = await fetch(`/api/campaigns/${params.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "active",
-          updater_wallet: publicKey.toBase58(),
-        }),
-      });
+      // Update campaign status to active (Issue #3 - Part 2)
+      // If this fails, we still have the tx signature stored above
+      try {
+        const updateResponse = await fetch(`/api/campaigns/${params.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "active",
+            funding_tx_signature: signature,
+            funded_at: new Date().toISOString(),
+            updater_wallet: publicKey.toBase58(),
+          }),
+        });
 
-      if (!updateResponse.ok) {
-        throw new Error("Failed to activate campaign");
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json().catch(() => ({}));
+          throw new Error(
+            errorData?.error || 
+            "Failed to activate campaign. Transaction succeeded but campaign status update failed. Please contact support with this transaction signature."
+          );
+        }
+      } catch (statusUpdateError) {
+        console.error("Status update failed:", statusUpdateError);
+        setSuccess(
+          `Transaction confirmed! However, there was an issue updating the campaign status. ` +
+          `Please contact support with your transaction signature for manual activation.`
+        );
+        return;
       }
     } catch (err) {
       console.error("Error funding campaign:", err);

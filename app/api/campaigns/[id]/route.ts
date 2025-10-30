@@ -40,7 +40,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, updater_wallet } = body;
+    const { status, updater_wallet, funding_tx_signature, funded_at } = body;
 
     if (!updater_wallet) {
       return NextResponse.json(
@@ -90,6 +90,15 @@ export async function PATCH(
         );
       }
       updates.status = status;
+    }
+
+    // Add funding transaction fields if provided
+    if (funding_tx_signature) {
+      updates.funding_tx_signature = funding_tx_signature;
+    }
+
+    if (funded_at) {
+      updates.funded_at = funded_at;
     }
 
     if (Object.keys(updates).length === 0) {
