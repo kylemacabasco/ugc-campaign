@@ -52,7 +52,7 @@ export async function PATCH(
     // Get campaign
     const { data: campaign } = await supabase
       .from("campaigns")
-      .select("id, creator_id")
+      .select("id, creator_id, status, distributed")
       .eq("id", id)
       .maybeSingle();
 
@@ -170,10 +170,28 @@ export async function PATCH(
           { status: 400 }
         );
       }
-      updates.distributed = distributed;
-      if (distributed) {
+      
+      // Validate distribution prerequisites
+      if (distributed === true) {
+        if (campaign.status !== "ended") {
+          return NextResponse.json(
+            { error: "Campaign must be ended before distributing payouts" },
+            { status: 400 }
+          );
+        }
+        if (campaign.distributed) {
+          return NextResponse.json(
+            { error: "Payouts have already been distributed for this campaign" },
+            { status: 400 }
+          );
+        }
         updates.distributed_at = new Date().toISOString();
+      } else {
+        // If undoing distribution, clear the timestamp
+        updates.distributed_at = null;
       }
+      
+      updates.distributed = distributed;
     }
 
     if (Object.keys(updates).length === 0) {

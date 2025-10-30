@@ -89,6 +89,12 @@ export async function GET(request: NextRequest) {
           );
           
           // Calculate target views: campaign_amount / rate_per_1k_views * 1000
+          // Protect against division by zero
+          if (campaign.rate_per_1k_views <= 0) {
+            console.warn(`Campaign ${campaign.id} has invalid rate_per_1k_views: ${campaign.rate_per_1k_views}`);
+            continue;
+          }
+          
           const targetViews = (campaign.campaign_amount / campaign.rate_per_1k_views) * 1000;
 
           // If goal reached, auto-end the campaign
@@ -96,7 +102,8 @@ export async function GET(request: NextRequest) {
             const { error: endError } = await supabase
               .from("campaigns")
               .update({ status: "ended" })
-              .eq("id", campaign.id);
+              .eq("id", campaign.id)
+              .eq("status", "active"); // Only if still active (prevents race condition)
             
             if (!endError) {
               console.log(`Auto-ended campaign ${campaign.id} (reached ${totalViews}/${targetViews} views)`);

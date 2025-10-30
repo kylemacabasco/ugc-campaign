@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/providers/AuthProvider";
 import Link from "next/link";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection, Transaction, SystemProgram, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 interface Campaign {
   id: string;
@@ -20,18 +18,22 @@ interface Campaign {
 
 interface Submission {
   id: string;
+  user_id: string;
   video_url: string;
   status: string;
   view_count: number;
   earned_amount: number;
   created_at: string;
+  users?: {
+    wallet_address: string;
+    username: string;
+  };
 }
 
 export default function CampaignDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const { publicKey, signTransaction } = useWallet();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,7 +128,7 @@ export default function CampaignDetailPage() {
   };
 
   const handleDistributePayouts = async () => {
-    if (!params.id || !publicKey || !signTransaction || !user) return;
+    if (!params.id || !user) return;
 
     const confirmed = confirm(
       "Are you sure you want to distribute payouts? This action cannot be undone."
@@ -135,11 +137,15 @@ export default function CampaignDetailPage() {
 
     setDistributing(true);
     try {
-      // Get approved submissions with earnings
-      const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
+      // Fetch submissions with user wallet addresses
+      const submissionsResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/submissions?campaign_id=${params.id}`
+      );
+      
       if (!submissionsResponse.ok) {
         throw new Error("Failed to fetch submissions");
       }
+      
       const allSubmissions: Submission[] = await submissionsResponse.json();
       
       // Filter approved submissions with earnings
@@ -149,14 +155,28 @@ export default function CampaignDetailPage() {
 
       if (approvedSubmissions.length === 0) {
         alert("No approved submissions with earnings to distribute");
+        setDistributing(false);
         return;
       }
 
-      // For now, just use a simple alert - owner will manually send USDC
-      // In the future, we can integrate with Solana to automate this
+      // Calculate total and build distribution list
       const totalOwed = approvedSubmissions.reduce((sum, s) => sum + s.earned_amount, 0);
       
-      alert(`Distribution Summary:\n\n${approvedSubmissions.length} creators to pay\nTotal: $${totalOwed.toFixed(2)} USDC\n\nPlease manually send USDC to each creator.\n\nOnce complete, the campaign will be marked as distributed.`);
+      // Build detailed distribution list
+      const distributionList = approvedSubmissions
+        .map((s, i) => 
+          `${i + 1}. ${s.users?.wallet_address || s.user_id.slice(0, 8)}: $${s.earned_amount.toFixed(2)} USDC`
+        )
+        .join("\n");
+      
+      alert(
+        `Distribution Summary:\n\n` +
+        `${approvedSubmissions.length} creators to pay\n` +
+        `Total: $${totalOwed.toFixed(2)} USDC\n\n` +
+        `Recipients:\n${distributionList}\n\n` +
+        `Please manually send USDC to each creator.\n\n` +
+        `Once complete, the campaign will be marked as distributed.`
+      );
 
       // Mark as distributed
       const response = await fetch(`/api/campaigns/${params.id}`, {
