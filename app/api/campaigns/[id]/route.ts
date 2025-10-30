@@ -94,7 +94,24 @@ export async function PATCH(
 
     // Add funding transaction fields if provided
     if (funding_tx_signature) {
-      updates.funding_tx_signature = funding_tx_signature;
+      // Validate funding transaction signature format
+      if (typeof funding_tx_signature !== 'string' || funding_tx_signature.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Invalid funding_tx_signature: must be a non-empty string" },
+          { status: 400 }
+        );
+      }
+      
+      // Validate Solana transaction signature format (base58, typically 87-88 chars)
+      const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{87,88}$/;
+      if (!base58Regex.test(funding_tx_signature.trim())) {
+        return NextResponse.json(
+          { error: "Invalid funding_tx_signature: must be a valid Solana transaction signature" },
+          { status: 400 }
+        );
+      }
+      
+      updates.funding_tx_signature = funding_tx_signature.trim();
     }
 
     if (funded_at) {
