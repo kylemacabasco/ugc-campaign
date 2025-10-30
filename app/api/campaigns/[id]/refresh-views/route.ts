@@ -9,11 +9,11 @@ export async function POST(
   try {
     const { id } = await params;
 
-    // If your FK is campaign_id, change contract_id -> campaign_id
+    // Fetch all submissions for this campaign
     const { data: subs, error: se } = await supabase
       .from("submissions")
       .select("id,platform,video_url")
-      .eq("contract_id", id);
+      .eq("campaign_id", id);
 
     if (se) {
       return NextResponse.json(

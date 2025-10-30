@@ -28,6 +28,7 @@ export default function CampaignDetailPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,6 +85,33 @@ export default function CampaignDetailPage() {
     );
   }
 
+  const handleRefreshViews = async () => {
+    if (!params.id) return;
+    
+    setRefreshing(true);
+    try {
+      const response = await fetch(`/api/campaigns/${params.id}/refresh-views`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to refresh views");
+      }
+
+      // Refetch submissions to get updated data
+      const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
+      if (submissionsResponse.ok) {
+        const submissionsData = await submissionsResponse.json();
+        setSubmissions(submissionsData);
+      }
+    } catch (err) {
+      console.error("Error refreshing views:", err);
+      alert("Failed to refresh views. Please try again.");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -139,9 +167,20 @@ export default function CampaignDetailPage() {
 
         {/* Submissions Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Submissions ({submissions.length})
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Submissions ({submissions.length})
+            </h2>
+            {submissions.length > 0 && (
+              <button
+                onClick={handleRefreshViews}
+                disabled={refreshing}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+              >
+                {refreshing ? "Refreshing..." : "Refresh Views"}
+              </button>
+            )}
+          </div>
 
           {submissions.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
