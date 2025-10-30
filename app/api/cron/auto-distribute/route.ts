@@ -61,6 +61,7 @@ export async function GET(request: NextRequest) {
               distributed_at: new Date().toISOString(),
             })
             .eq("id", campaign.id)
+            .eq("status", "ended") // Only if still ended
             .eq("distributed", false); // Prevent race condition
 
           if (!updateError) {
