@@ -5,16 +5,6 @@ import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useAuth } from "@/app/providers/AuthProvider";
 
-function slugify(s: string) {
-  return s
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 80);
-}
-
 export default function CreateCampaignPage() {
   const router = useRouter();
   const { publicKey } = useWallet();
@@ -22,7 +12,6 @@ export default function CreateCampaignPage() {
 
   const [formData, setFormData] = useState({
     title: "",
-    slug: "",
     description: "",
     requirements: "",
     bountyAmount: "",
@@ -32,14 +21,6 @@ export default function CreateCampaignPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const onTitleChange = (v: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      title: v,
-      slug: prev.slug ? prev.slug : slugify(v),
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -47,12 +28,10 @@ export default function CreateCampaignPage() {
     if (!publicKey) return setError("Please connect your wallet.");
 
     const title = formData.title.trim();
-    const slug = (formData.slug || slugify(title)).trim();
     const bounty = Number(formData.bountyAmount);
     const rate = Number(formData.ratePer1kViews);
 
     if (title.length < 3) return setError("Title must be at least 3 characters.");
-    if (!slug) return setError("Slug is required.");
     if (!Number.isFinite(bounty) || bounty <= 0) return setError("Bounty must be a positive number.");
     if (!Number.isFinite(rate) || rate <= 0) return setError("Rate per 1k views must be a positive number.");
 
@@ -65,16 +44,13 @@ export default function CreateCampaignPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // API expects snake_case fields
+          // Server will generate/ensure a unique slug
           title,
-          slug,
           description: formData.description,
-          // requirements can be stored on campaign or omitted if you store on submission—send it if your API supports it
           requirements: formData.requirements,
           bounty_amount: bounty,
           rate_per_1k_views: rate,
-          // if your API needs creator wallet, include it; if not, remove this (RLS + auth user preferred)
-          creator_wallet: publicKey.toBase58(),
+          creator_wallet: publicKey.toBase58(), // remove if your API derives from auth
         }),
       });
 
@@ -121,21 +97,9 @@ export default function CreateCampaignPage() {
               required
               className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
               value={formData.title}
-              onChange={(e) => onTitleChange(e.target.value)}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g., Product Review Campaign"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Slug</label>
-            <input
-              type="text"
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
-              value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: slugify(e.target.value) })}
-              placeholder="product-review-campaign"
-            />
-            <p className="text-xs text-gray-500 mt-1">Auto-filled from title; you can edit.</p>
           </div>
 
           <div>
