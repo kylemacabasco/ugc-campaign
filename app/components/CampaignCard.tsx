@@ -14,10 +14,9 @@ export interface ApiCampaign {
 
 interface CampaignCardProps {
   campaign: ApiCampaign;
-  isClickable?: boolean;
 }
 
-export default function CampaignCard({ campaign, isClickable = true }: CampaignCardProps) {
+export default function CampaignCard({ campaign }: CampaignCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -88,15 +87,6 @@ export default function CampaignCard({ campaign, isClickable = true }: CampaignC
       </div>
     </>
   );
-
-  // If not clickable, render as a div instead of Link
-  if (!isClickable) {
-    return (
-      <div className={cardClassName}>
-        {cardContent}
-      </div>
-    );
-  }
 
   return (
     <Link href={`/campaigns/${campaign.id}`} className={cardClassName}>
