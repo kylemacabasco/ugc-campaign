@@ -201,6 +201,27 @@ export default function CampaignDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition group"
+        >
+          <svg
+            className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          <span className="font-medium">Back to All Campaigns</span>
+        </Link>
+
         {/* Campaign Details */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-start justify-between mb-4 gap-3">
