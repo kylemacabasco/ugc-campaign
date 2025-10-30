@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "../providers/AuthProvider";
 
 export default function CreateCampaignPage() {
   const router = useRouter();
