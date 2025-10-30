@@ -409,6 +409,18 @@ export default function CampaignDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* Submit Content Button */}
+          {campaign.status === "active" && (
+            <div className="mt-6">
+              <Link
+                href={`/campaigns/${params.id}/submit`}
+                className="block w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition font-medium text-center"
+              >
+                Submit Content
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Submissions Section */}

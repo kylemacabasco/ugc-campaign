@@ -14,11 +14,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate YouTube URL format
+    // Validate URL format (YouTube or uploaded media or any valid URL)
     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[\w-]{11}/;
-    if (!youtubeRegex.test(video_url)) {
+    const isValidUrl = /^https?:\/\/.+/.test(video_url); // Any valid http/https URL
+    const isYouTube = youtubeRegex.test(video_url);
+    
+    if (!isValidUrl) {
       return NextResponse.json(
-        { error: "Invalid YouTube URL format" },
+        { error: "Invalid URL format. Please provide a valid URL." },
         { status: 400 }
       );
     }
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
         campaign_id,
         user_id: user.id,
         video_url,
-        platform: "youtube",
+        platform: isYouTube ? "youtube" : "uploaded",
         status: "pending",
       })
       .select()
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error("Error creating submission:", insertError);
       return NextResponse.json(
-        { error: "Failed to create submission" },
+        { error: `Failed to create submission: ${insertError.message || insertError.code || "Unknown error"}` },
         { status: 500 }
       );
     }
