@@ -368,7 +368,7 @@ export default function CampaignDetailPage() {
                     id="videoUrl"
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
+                    placeholder="https://www.youtube.com/watch?v=…"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-gray-600"
                     required
                     disabled={!publicKey || !!isOwner}
@@ -395,7 +395,7 @@ export default function CampaignDetailPage() {
                     disabled={submitting || !videoUrl.trim() || !publicKey || !!isOwner}
                     className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
                   >
-                    {submitting ? "Submitting..." : "Submit"}
+                    {submitting ? "Submitting…" : "Submit"}
                   </button>
                 </div>
               </form>
