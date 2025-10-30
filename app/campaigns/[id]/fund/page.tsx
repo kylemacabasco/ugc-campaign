@@ -36,6 +36,7 @@ export default function FundCampaignPage() {
   const [error, setError] = useState<string | null>(null);
   const [funding, setFunding] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+  const [txSignature, setTxSignature] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -82,9 +83,13 @@ export default function FundCampaignPage() {
     setSuccess(null);
 
     try {
-      // Create a dummy treasury address (in production, this should be a program-derived address)
-      // For now, we'll use a hardcoded treasury wallet
-      const treasuryPublicKey = new PublicKey("11111111111111111111111111111111");
+      // Get treasury address from environment variables
+      const treasuryAddress = process.env.NEXT_PUBLIC_TREASURY_ADDRESS;
+      if (!treasuryAddress) {
+        throw new Error("Treasury address not configured. Please set NEXT_PUBLIC_TREASURY_ADDRESS in your environment variables.");
+      }
+      
+      const treasuryPublicKey = new PublicKey(treasuryAddress);
       
       // Create transaction to send SOL
       const lamports = Math.floor(campaign.campaign_amount * LAMPORTS_PER_SOL);
@@ -108,7 +113,8 @@ export default function FundCampaignPage() {
       // Wait for confirmation
       await connection.confirmTransaction(signature, "confirmed");
 
-      setSuccess(`Transaction sent! Signature: ${signature.slice(0, 8)}...`);
+      setTxSignature(signature);
+      setSuccess(`Transaction confirmed successfully!`);
 
       // Update campaign status to active
       const updateResponse = await fetch(`/api/campaigns/${params.id}`, {
@@ -253,7 +259,17 @@ export default function FundCampaignPage() {
 
           {success && (
             <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
-              {success}
+              <p className="font-medium">{success}</p>
+              {txSignature && (
+                <a
+                  href={`https://explorer.solana.com/tx/${txSignature}?cluster=mainnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-800 hover:text-green-900 hover:underline text-sm block mt-2 font-medium"
+                >
+                  View transaction on Solana Explorer →
+                </a>
+              )}
               <p className="text-sm mt-2">Redirecting to campaign page...</p>
             </div>
           )}
