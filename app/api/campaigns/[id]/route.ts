@@ -40,7 +40,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, updater_wallet } = body;
+    const { status, updater_wallet, funding_tx_signature, funded_at, title, description, asset_folder_url, distributed } = body;
 
     if (!updater_wallet) {
       return NextResponse.json(
@@ -52,7 +52,7 @@ export async function PATCH(
     // Get campaign
     const { data: campaign } = await supabase
       .from("campaigns")
-      .select("id, creator_id")
+      .select("id, creator_id, status, distributed")
       .eq("id", id)
       .maybeSingle();
 
@@ -80,16 +80,118 @@ export async function PATCH(
     // Build update object
     const updates: any = {};
     if (status) {
-      if (!["inactive", "active", "completed", "cancelled"].includes(status)) {
+      if (!["draft", "active", "ended", "cancelled"].includes(status)) {
         return NextResponse.json(
           {
             error:
-              "Invalid status. Must be: inactive, active, completed, or cancelled",
+              "Invalid status. Must be: draft, active, ended, or cancelled",
           },
           { status: 400 }
         );
       }
       updates.status = status;
+    }
+
+    // Add funding transaction fields if provided
+    if (funding_tx_signature) {
+      // Validate funding transaction signature format
+      if (typeof funding_tx_signature !== 'string' || funding_tx_signature.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Invalid funding_tx_signature: must be a non-empty string" },
+          { status: 400 }
+        );
+      }
+      
+      // Validate Solana transaction signature format (base58, typically 87-88 chars)
+      const base58Regex = /^[1-9A-HJ-NP-Za-km-z]{87,88}$/;
+      if (!base58Regex.test(funding_tx_signature.trim())) {
+        return NextResponse.json(
+          { error: "Invalid funding_tx_signature: must be a valid Solana transaction signature" },
+          { status: 400 }
+        );
+      }
+      
+      updates.funding_tx_signature = funding_tx_signature.trim();
+    }
+
+    if (funded_at) {
+      updates.funded_at = funded_at;
+    }
+
+    // Allow updating campaign details (but not financial terms)
+    if (title !== undefined) {
+      if (!title || title.trim().length === 0) {
+        return NextResponse.json(
+          { error: "Title cannot be empty" },
+          { status: 400 }
+        );
+      }
+      if (title.trim().length > 200) {
+        return NextResponse.json(
+          { error: "Title cannot exceed 200 characters" },
+          { status: 400 }
+        );
+      }
+      updates.title = title.trim();
+    }
+
+    if (description !== undefined) {
+      const trimmedDesc = description ? description.trim() : null;
+      if (trimmedDesc && trimmedDesc.length > 5000) {
+        return NextResponse.json(
+          { error: "Description cannot exceed 5000 characters" },
+          { status: 400 }
+        );
+      }
+      updates.description = trimmedDesc;
+    }
+
+    if (asset_folder_url !== undefined) {
+      const trimmedUrl = asset_folder_url ? asset_folder_url.trim() : null;
+      // Basic URL validation if provided
+      if (trimmedUrl) {
+        try {
+          new URL(trimmedUrl);
+        } catch {
+          return NextResponse.json(
+            { error: "Asset folder URL must be a valid URL" },
+            { status: 400 }
+          );
+        }
+      }
+      updates.asset_folder_url = trimmedUrl;
+    }
+
+    // Handle distribution marking
+    if (distributed !== undefined) {
+      if (typeof distributed !== "boolean") {
+        return NextResponse.json(
+          { error: "distributed must be a boolean" },
+          { status: 400 }
+        );
+      }
+      
+      // Validate distribution prerequisites
+      if (distributed === true) {
+        if (campaign.status !== "ended") {
+          return NextResponse.json(
+            { error: "Campaign must be ended before distributing payouts" },
+            { status: 400 }
+          );
+        }
+        if (campaign.distributed) {
+          return NextResponse.json(
+            { error: "Payouts have already been distributed for this campaign" },
+            { status: 400 }
+          );
+        }
+        updates.distributed_at = new Date().toISOString();
+      } else {
+        // If undoing distribution, clear the timestamp
+        updates.distributed_at = null;
+      }
+      
+      updates.distributed = distributed;
     }
 
     if (Object.keys(updates).length === 0) {

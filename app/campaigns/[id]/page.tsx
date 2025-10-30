@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useAuth } from "@/app/providers/AuthProvider";
 import Link from "next/link";
 
 interface Campaign {
@@ -11,25 +13,47 @@ interface Campaign {
   campaign_amount: number;
   rate_per_1k_views: number;
   status: string;
+  creator_id: string;
+  distributed: boolean;
+  metadata?: {
+    requirements?: string;
+  };
 }
 
 interface Submission {
   id: string;
+  user_id: string;
   video_url: string;
   status: string;
   view_count: number;
   earned_amount: number;
   created_at: string;
+  users?: {
+    wallet_address: string;
+    username: string;
+  };
 }
 
 export default function CampaignDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { publicKey } = useWallet();
+  const { user } = useAuth();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [distributing, setDistributing] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  
+  // Check if current user is the campaign creator
+  const isOwner = user && campaign && user.id === campaign.creator_id;
+  // Check if user can submit (authenticated, not creator, campaign is active)
+  const canSubmit = user && publicKey && !isOwner && campaign?.status === "active";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,16 +137,191 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const handleSubmitVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!videoUrl.trim() || !params.id) return;
+
+    // Check if wallet is connected
+    if (!publicKey) {
+      alert("Please connect your wallet to submit a video");
+      return;
+    }
+
+    // Check if user is the creator
+    if (isOwner) {
+      alert("Campaign creators cannot submit to their own campaigns");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/submissions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          campaign_id: params.id,
+          submitter_wallet: publicKey.toBase58(),
+          video_url: videoUrl.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit video");
+      }
+
+      // Refetch submissions to show the new one
+      const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
+      if (submissionsResponse.ok) {
+        const submissionsData = await submissionsResponse.json();
+        setSubmissions(submissionsData);
+      }
+
+      // Reset form and close modal
+      setVideoUrl("");
+      setShowSubmitModal(false);
+      alert("Video submitted successfully!");
+    } catch (err) {
+      console.error("Error submitting video:", err);
+      alert(err instanceof Error ? err.message : "Failed to submit video. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDistributePayouts = async () => {
+    if (!params.id || !user) return;
+
+    const confirmed = confirm(
+      "Are you sure you want to distribute payouts? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    setDistributing(true);
+    try {
+      // Fetch submissions with user wallet addresses
+      const submissionsResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/submissions?campaign_id=${params.id}`
+      );
+      
+      if (!submissionsResponse.ok) {
+        throw new Error("Failed to fetch submissions");
+      }
+      
+      const allSubmissions: Submission[] = await submissionsResponse.json();
+      
+      // Filter approved submissions with earnings
+      const approvedSubmissions = allSubmissions.filter(
+        (s) => s.status === "approved" && s.earned_amount > 0
+      );
+
+      if (approvedSubmissions.length === 0) {
+        alert("No approved submissions with earnings to distribute");
+        setDistributing(false);
+        return;
+      }
+
+      // Calculate total and build distribution list
+      const totalOwed = approvedSubmissions.reduce((sum, s) => sum + s.earned_amount, 0);
+      
+      // Build detailed distribution list
+      const distributionList = approvedSubmissions
+        .map((s, i) => 
+          `${i + 1}. ${s.users?.wallet_address || s.user_id.slice(0, 8)}: $${s.earned_amount.toFixed(2)} USDC`
+        )
+        .join("\n");
+      
+      alert(
+        `Distribution Summary:\n\n` +
+        `${approvedSubmissions.length} creators to pay\n` +
+        `Total: $${totalOwed.toFixed(2)} USDC\n\n` +
+        `Recipients:\n${distributionList}\n\n` +
+        `Please manually send USDC to each creator.\n\n` +
+        `Once complete, the campaign will be marked as distributed.`
+      );
+
+      // Mark as distributed
+      const response = await fetch(`/api/campaigns/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updater_wallet: user.wallet_address,
+          distributed: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark campaign as distributed");
+      }
+
+      // Refetch campaign
+      const campaignResponse = await fetch(`/api/campaigns/${params.id}`);
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json();
+        setCampaign(campaignData);
+      }
+
+      alert("Campaign marked as distributed!");
+    } catch (err) {
+      console.error("Error distributing payouts:", err);
+      alert(`Failed to distribute payouts: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setDistributing(false);
+    }
+  };
+
+  const handleEndCampaign = async () => {
+    if (!params.id || !user) return;
+
+    const confirmed = confirm(
+      "Are you sure you want to end this campaign? This will stop accepting new submissions and allow you to distribute payouts."
+    );
+    if (!confirmed) return;
+
+    setEnding(true);
+    try {
+      const response = await fetch(`/api/campaigns/${params.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          updater_wallet: user.wallet_address,
+          status: "ended",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to end campaign");
+      }
+
+      // Refetch campaign
+      const campaignResponse = await fetch(`/api/campaigns/${params.id}`);
+      if (campaignResponse.ok) {
+        const campaignData = await campaignResponse.json();
+        setCampaign(campaignData);
+      }
+
+      alert("Campaign ended successfully!");
+    } catch (err) {
+      console.error("Error ending campaign:", err);
+      alert(`Failed to end campaign: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setEnding(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800";
-      case "inactive":
-        return "bg-yellow-100 text-yellow-800";
-      case "completed":
+      case "draft":
+        return "bg-gray-100 text-gray-800";
+      case "ended":
         return "bg-blue-100 text-blue-800";
       case "cancelled":
-        return "bg-gray-100 text-gray-800";
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -133,20 +332,66 @@ export default function CampaignDetailPage() {
       <div className="max-w-4xl mx-auto">
         {/* Campaign Details */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-start justify-between mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {campaign.title}
-            </h1>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                campaign.status
-              )}`}
-            >
-              {campaign.status.toUpperCase()}
-            </span>
+          <div className="flex items-start justify-between mb-4 gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold text-gray-900 break-words">
+                {campaign.title}
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
+              {isOwner && campaign.status === "active" && (
+                <button
+                  onClick={handleEndCampaign}
+                  disabled={ending}
+                  className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium whitespace-nowrap"
+                >
+                  {ending ? "Ending…" : "End Campaign"}
+                </button>
+              )}
+              {isOwner && campaign.status === "ended" && !campaign.distributed && (
+                <button
+                  onClick={handleDistributePayouts}
+                  disabled={distributing}
+                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium whitespace-nowrap"
+                >
+                  {distributing ? "Distributing…" : "Distribute Payouts"}
+                </button>
+              )}
+              {isOwner && (
+                <Link
+                  href={`/campaigns/${params.id}/edit`}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium whitespace-nowrap"
+                >
+                  Edit
+                </Link>
+              )}
+              {campaign.distributed && (
+                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium whitespace-nowrap">
+                  DISTRIBUTED
+                </span>
+              )}
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(
+                  campaign.status
+                )}`}
+              >
+                {campaign.status.toUpperCase()}
+              </span>
+            </div>
           </div>
 
           <p className="text-gray-600 mb-6">{campaign.description}</p>
+
+          {campaign.metadata?.requirements && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Requirements
+              </h3>
+              <p className="text-gray-700 whitespace-pre-wrap">
+                {campaign.metadata.requirements}
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -184,21 +429,31 @@ export default function CampaignDetailPage() {
             <h2 className="text-2xl font-bold text-gray-900">
               Submissions ({submissions.length})
             </h2>
-            {submissions.length > 0 && (
-              <button
-                onClick={handleRefreshViews}
-                disabled={refreshing}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-              >
-                {refreshing ? "Refreshing..." : "Refresh Views"}
-              </button>
-            )}
+            <div className="flex gap-3">
+              {canSubmit && (
+                <button
+                  onClick={() => setShowSubmitModal(true)}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium"
+                >
+                  Submit Video
+                </button>
+              )}
+              {submissions.length > 0 && (
+                <button
+                  onClick={handleRefreshViews}
+                  disabled={refreshing}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                >
+                  {refreshing ? "Refreshing…" : "Refresh Views"}
+                </button>
+              )}
+            </div>
           </div>
 
           {submissions.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p>No submissions yet</p>
-              <p className="text-sm mt-2">Be the first to submit content!</p>
+            <div className="text-center py-12 text-gray-600">
+              <p className="text-lg">No submissions yet</p>
+              <p className="text-base mt-2">Be the first to submit content!</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -217,7 +472,7 @@ export default function CampaignDetailPage() {
                       >
                         {submission.video_url}
                       </a>
-                      <div className="flex gap-4 mt-2 text-sm text-gray-600">
+                      <div className="flex gap-4 mt-2 text-base text-gray-700">
                         <span>Views: {submission.view_count.toLocaleString()}</span>
                         <span>Earned: ${submission.earned_amount.toFixed(2)} USDC</span>
                         <span>
@@ -242,6 +497,75 @@ export default function CampaignDetailPage() {
             </div>
           )}
         </div>
+
+        {/* Submit Video Modal */}
+        {showSubmitModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Submit Your Video
+              </h3>
+              {!publicKey && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-base text-yellow-900 font-medium">
+                    Please connect your wallet to submit a video
+                  </p>
+                </div>
+              )}
+              {isOwner && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-base text-red-900 font-medium">
+                    Campaign creators cannot submit to their own campaigns
+                  </p>
+                </div>
+              )}
+              <form onSubmit={handleSubmitVideo}>
+                <div className="mb-4">
+                  <label
+                    htmlFor="videoUrl"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Video URL
+                  </label>
+                  <input
+                    type="url"
+                    id="videoUrl"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=…"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-gray-600"
+                    required
+                    disabled={!publicKey || !!isOwner}
+                  />
+                  <p className="text-sm text-gray-600 mt-2">
+                    Enter the URL of your YouTube video
+                  </p>
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowSubmitModal(false);
+                      setVideoUrl("");
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                    disabled={submitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting || !videoUrl.trim() || !publicKey || !!isOwner}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                  >
+                    {submitting ? "Submitting…" : "Submit"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
