@@ -310,7 +310,11 @@ export default function CampaignDetailPage() {
           {submissions.length === 0 ? (
             <div className="text-center py-12 text-gray-600">
               <p className="text-lg">No submissions yet</p>
-              <p className="text-base mt-2">Be the first to submit content!</p>
+              {isOwner ? (
+                <p className="text-base mt-2">Waiting for content creators to submit videos</p>
+              ) : (
+                <p className="text-base mt-2">Be the first to submit content!</p>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
