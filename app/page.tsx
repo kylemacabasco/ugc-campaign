@@ -3,7 +3,6 @@
 import Link from "next/link";
 import WalletButton from "./components/WalletButton";
 import UsernameForm from "./components/UsernameForm";
-import UserProfile from "./components/UserProfile";
 import CampaignCard, { ApiCampaign } from "./components/CampaignCard";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -13,7 +12,6 @@ import { useState, useEffect } from "react";
 export default function Home() {
   const { connected } = useWallet();
   const { user, loading } = useAuth();
-  const [showProfile, setShowProfile] = useState(false);
   const [campaigns, setCampaigns] = useState<ApiCampaign[]>([]);
   const [campaignsLoading, setCampaignsLoading] = useState(true);
 
@@ -99,40 +97,12 @@ export default function Home() {
   }
 
   // Show username form for first-time users without username
-  if (user && !user.username && !showProfile) {
+  if (user && !user.username) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
         <UsernameForm 
           isFirstTime={true} 
-          onComplete={() => setShowProfile(true)} 
         />
-      </div>
-    );
-  }
-
-  // Show profile or main app interface
-  if (showProfile) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Header with back button */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center h-16">
-              <button
-                onClick={() => setShowProfile(false)}
-                className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-              >
-                ← Back to Home
-              </button>
-              <h1 className="ml-4 text-xl font-semibold text-gray-900">Profile</h1>
-            </div>
-          </div>
-        </header>
-
-        {/* Profile content */}
-        <div className="flex items-center justify-center py-8 px-4">
-          <UserProfile />
-        </div>
       </div>
     );
   }
@@ -157,12 +127,12 @@ export default function Home() {
                 {user?.username}
               </span>
               <WalletMultiButton className="!text-xs !py-1 !px-3" />
-              <button
-                onClick={() => setShowProfile(true)}
+              <Link
+                href={`/profile/${user?.wallet_address}`}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
               >
                 Profile
-              </button>
+              </Link>
             </div>
           </div>
         </div>
