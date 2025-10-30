@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "../../../../../lib/supabase";
+import { supabase } from "@/lib/supabase";
 
-// POST /api/[id]/refresh-views - Refresh view counts for all submissions in a campaign
+// POST /api/campaigns/[id]/refresh-views - Refresh view counts for all submissions in a campaign
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -22,23 +22,26 @@ export async function POST(
       );
     }
 
-    // Helper to call your existing YouTube (or platform) views proxy
-    async function fetchViews(platform: string | null, url: string): Promise<number> {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/youtube-views`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify({ platform, url }),
-      });
+    // Helper to call YouTube views API
+    async function fetchViews(url: string): Promise<number> {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/youtube-views`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          body: JSON.stringify({ urls: [url] }),
+        }
+      );
       const json = await res.json().catch(() => null);
       if (!res.ok) throw new Error(json?.error || "Failed fetching views");
-      return Number(json?.views ?? 0);
+      return Number(json?.results?.[0]?.viewCount ?? 0);
     }
 
     let updated = 0;
     for (const s of subs || []) {
       try {
-        const views = await fetchViews(s.platform, s.video_url);
+        const views = await fetchViews(s.video_url);
         const { error: ue } = await supabase
           .from("submissions")
           .update({ view_count: views, updated_at: new Date().toISOString() })
@@ -51,11 +54,10 @@ export async function POST(
 
     return NextResponse.json({ ok: true, updated });
   } catch (error) {
-    console.error("Error in POST /api/[id]/refresh-views:", error);
+    console.error("Error in POST /api/campaigns/[id]/refresh-views:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-
