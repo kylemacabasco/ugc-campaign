@@ -126,15 +126,40 @@ export async function PATCH(
           { status: 400 }
         );
       }
+      if (title.trim().length > 200) {
+        return NextResponse.json(
+          { error: "Title cannot exceed 200 characters" },
+          { status: 400 }
+        );
+      }
       updates.title = title.trim();
     }
 
     if (description !== undefined) {
-      updates.description = description?.trim() || null;
+      const trimmedDesc = description ? description.trim() : null;
+      if (trimmedDesc && trimmedDesc.length > 5000) {
+        return NextResponse.json(
+          { error: "Description cannot exceed 5000 characters" },
+          { status: 400 }
+        );
+      }
+      updates.description = trimmedDesc;
     }
 
     if (asset_folder_url !== undefined) {
-      updates.asset_folder_url = asset_folder_url?.trim() || null;
+      const trimmedUrl = asset_folder_url ? asset_folder_url.trim() : null;
+      // Basic URL validation if provided
+      if (trimmedUrl) {
+        try {
+          new URL(trimmedUrl);
+        } catch {
+          return NextResponse.json(
+            { error: "Asset folder URL must be a valid URL" },
+            { status: 400 }
+          );
+        }
+      }
+      updates.asset_folder_url = trimmedUrl;
     }
 
     if (Object.keys(updates).length === 0) {

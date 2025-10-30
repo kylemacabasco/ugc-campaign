@@ -163,9 +163,13 @@ export default function EditCampaignPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
+                maxLength={200}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 placeholder="My Awesome Campaign"
               />
+              <p className="mt-1 text-sm text-gray-500">
+                {title.length}/200 characters
+              </p>
             </div>
 
             {/* Description */}
@@ -181,9 +185,13 @@ export default function EditCampaignPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
+                maxLength={5000}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 placeholder="Describe your campaign…"
               />
+              <p className="mt-1 text-sm text-gray-500">
+                {description.length}/5000 characters
+              </p>
             </div>
 
             {/* Asset Folder URL */}
