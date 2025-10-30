@@ -8,10 +8,6 @@ export interface ApiCampaign {
   campaign_amount: number;
   rate_per_1k_views: number;
   status: string;
-  calculated_earned?: number;
-  progress_percentage?: number;
-  total_submission_views?: number;
-  is_completed?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -41,10 +37,8 @@ export default function CampaignCard({ campaign, isClickable = true }: CampaignC
     }
   };
 
-  // Calculate progress and completion status
-  const progressPercentage = campaign.progress_percentage ?? 0;
-  const isCompleted = campaign.is_completed ?? campaign.status === 'completed';
-  const totalViews = campaign.total_submission_views ?? 0;
+  // Calculate completion status from database status field
+  const isCompleted = campaign.status === 'completed';
 
   const cardClassName = "bg-white dark:bg-slate-900 rounded-lg shadow hover:shadow-lg transition-shadow p-6 block border border-slate-200 dark:border-slate-800";
   
@@ -88,35 +82,21 @@ export default function CampaignCard({ campaign, isClickable = true }: CampaignC
           </span>
         </div>
 
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-500 dark:text-slate-400">Progress</span>
-            <span className="text-gray-900 dark:text-slate-100">
-              {progressPercentage.toFixed(0)}%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-2">
-            <div
-              className={`h-2 rounded-full ${
-                isCompleted ? "bg-green-500" : "bg-blue-600"
-              }`}
-              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-            />
-          </div>
-        </div>
-
-        {totalViews > 0 && (
-          <div className="text-sm text-gray-500 dark:text-slate-400">
-            {totalViews.toLocaleString()} total views
-          </div>
-        )}
-
         <div className="pt-2 mt-2 border-t border-slate-200 dark:border-slate-700 text-xs text-gray-400 dark:text-slate-500">
           Last updated {formatDate(campaign.updated_at)}
         </div>
       </div>
     </>
   );
+
+  // If not clickable, render as a div instead of Link
+  if (!isClickable) {
+    return (
+      <div className={cardClassName}>
+        {cardContent}
+      </div>
+    );
+  }
 
   return (
     <Link href={`/campaigns/${campaign.id}`} className={cardClassName}>
