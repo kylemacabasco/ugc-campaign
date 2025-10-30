@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
           campaign_amount,
           rate_per_1k_views,
           creator_id: user.id,
-          status: "inactive",
+          status: "draft",
           metadata: requirements ? { requirements } : {},
         },
       ])

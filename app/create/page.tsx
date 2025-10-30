@@ -48,7 +48,7 @@ export default function CreateCampaignPage() {
           title,
           description: formData.description,
           requirements: formData.requirements,
-          bounty_amount: bounty,
+          campaign_amount: bounty,
           rate_per_1k_views: rate,
           creator_wallet: publicKey.toBase58(), // remove if your API derives from auth
         }),

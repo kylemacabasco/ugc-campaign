@@ -80,11 +80,11 @@ export async function PATCH(
     // Build update object
     const updates: any = {};
     if (status) {
-      if (!["inactive", "active", "completed", "cancelled"].includes(status)) {
+      if (!["draft", "active", "ended", "cancelled"].includes(status)) {
         return NextResponse.json(
           {
             error:
-              "Invalid status. Must be: inactive, active, completed, or cancelled",
+              "Invalid status. Must be: draft, active, ended, or cancelled",
           },
           { status: 400 }
         );
