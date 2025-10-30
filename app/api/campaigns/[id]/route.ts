@@ -9,16 +9,16 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("campaigns")
       .select(`
         *,
         creator:users!creator_id(wallet_address, username)
       `)
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (!data) {
       return NextResponse.json(
         { error: "Campaign not found" },
         { status: 404 }
@@ -53,7 +53,7 @@ export async function PATCH(
     }
 
     // Get campaign with creator info
-    const { data: campaign, error: campaignError } = await supabase
+    const { data: campaign } = await supabase
       .from("campaigns")
       .select(`
         id,
@@ -61,9 +61,9 @@ export async function PATCH(
         users!creator_id(wallet_address)
       `)
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (campaignError || !campaign) {
+    if (!campaign) {
       return NextResponse.json(
         { error: "Campaign not found" },
         { status: 404 }

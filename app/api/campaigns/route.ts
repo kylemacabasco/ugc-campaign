@@ -35,13 +35,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user by wallet address
-    const { data: user, error: userError } = await supabase
+    const { data: user } = await supabase
       .from("users")
       .select("id")
       .eq("wallet_address", creator_wallet)
-      .single();
+      .maybeSingle();
 
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
         { error: "User not found. Please connect your wallet first." },
         { status: 401 }
