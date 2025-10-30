@@ -11,10 +11,7 @@ export async function GET(
 
     const { data } = await supabase
       .from("campaigns")
-      .select(`
-        *,
-        creator:users!creator_id(wallet_address, username)
-      `)
+      .select("*")
       .eq("id", id)
       .maybeSingle();
 
@@ -52,14 +49,10 @@ export async function PATCH(
       );
     }
 
-    // Get campaign with creator info
+    // Get campaign
     const { data: campaign } = await supabase
       .from("campaigns")
-      .select(`
-        id,
-        creator_id,
-        users!creator_id(wallet_address)
-      `)
+      .select("id, creator_id")
       .eq("id", id)
       .maybeSingle();
 
@@ -71,10 +64,13 @@ export async function PATCH(
     }
 
     // Check authorization: only campaign creator can update
-    const creatorData = campaign.users as any;
-    const creatorWallet = creatorData?.wallet_address;
+    const { data: creator } = await supabase
+      .from("users")
+      .select("wallet_address")
+      .eq("id", campaign.creator_id)
+      .maybeSingle();
 
-    if (creatorWallet !== updater_wallet) {
+    if (!creator || creator.wallet_address !== updater_wallet) {
       return NextResponse.json(
         { error: "Only campaign creator can update campaigns" },
         { status: 403 }
@@ -108,10 +104,7 @@ export async function PATCH(
       .from("campaigns")
       .update(updates)
       .eq("id", id)
-      .select(`
-        *,
-        creator:users!creator_id(wallet_address, username)
-      `)
+      .select("*")
       .single();
 
     if (updateError) {

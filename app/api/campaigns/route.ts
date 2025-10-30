@@ -93,10 +93,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("campaigns")
-      .select(`
-        *,
-        creator:users!creator_id(wallet_address, username)
-      `)
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (status) {
