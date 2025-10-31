@@ -25,26 +25,26 @@ export default function CampaignCard({ campaign, currentUserId }: CampaignCardPr
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800";
+        return "badge-active text-white";
       case "draft":
-        return "bg-gray-100 text-gray-800";
+        return "bg-charcoal-light/10 text-charcoal-light border border-charcoal-light/20";
       case "ended":
-        return "bg-blue-100 text-blue-800";
+        return "bg-earth/10 text-earth-dark border border-earth/20";
       case "cancelled":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100/50 text-red-800 border border-red-200/50";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-parchment text-charcoal border border-border";
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-lg shadow hover:shadow-lg transition-shadow p-6 border border-slate-200 dark:border-slate-800">
-      <div className="flex justify-between items-start mb-4 gap-2">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-slate-100 line-clamp-2 flex-1 min-w-0">
+    <div className="bg-card rounded-xl shadow-soft hover:shadow-soft-lg transition-all p-8 border-2 border-border hover:-translate-y-1 duration-300">
+      <div className="flex justify-between items-start mb-5 gap-3">
+        <h2 className="text-2xl font-semibold text-charcoal line-clamp-2 flex-1 min-w-0 tracking-tight">
           {campaign.title}
         </h2>
         <span
-          className={`px-3 py-1 text-xs font-medium rounded-full uppercase whitespace-nowrap ${getStatusStyle(
+          className={`px-3 py-1.5 text-xs font-medium rounded-lg uppercase whitespace-nowrap ${getStatusStyle(
             campaign.status
           )}`}
         >
@@ -53,29 +53,29 @@ export default function CampaignCard({ campaign, currentUserId }: CampaignCardPr
       </div>
 
       {campaign.description && (
-        <p className="text-gray-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">
+        <p className="text-charcoal-light text-base mb-6 line-clamp-2 leading-relaxed">
           {campaign.description}
         </p>
       )}
 
-      <div className="space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500 dark:text-slate-400">Total Amount:</span>
-          <span className="font-semibold text-gray-900 dark:text-slate-100">
+      <div className="space-y-4">
+        <div className="flex justify-between text-base">
+          <span className="text-charcoal-light">Total Amount:</span>
+          <span className="font-semibold text-charcoal">
             {campaign.campaign_amount} SOL
           </span>
         </div>
 
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500 dark:text-slate-400">Rate:</span>
-          <span className="font-semibold text-gray-900 dark:text-slate-100">
+        <div className="flex justify-between text-base">
+          <span className="text-charcoal-light">Rate:</span>
+          <span className="font-semibold text-charcoal">
             {campaign.rate_per_1k_views} SOL / 1k views
           </span>
         </div>
 
         {/* Action button */}
-        <Link href={`/campaigns/${campaign.id}`} className="block w-full mt-4">
-          <button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+        <Link href={`/campaigns/${campaign.id}`} className="block w-full mt-6">
+          <button className="w-full bg-sage hover:bg-sage-dark text-white font-medium py-3.5 px-5 rounded-xl transition-all duration-200 shadow-soft hover:shadow-soft-lg hover:-translate-y-0.5">
             {isOwner ? "View your Campaign" : "Submit Content"}
           </button>
         </Link>
