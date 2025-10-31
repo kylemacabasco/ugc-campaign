@@ -48,7 +48,6 @@ export default function CampaignDetailPage() {
   const [ending, setEnding] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   
   // Check if current user is the campaign creator
   const isOwner = user && campaign && user.id === campaign.creator_id;
@@ -153,59 +152,8 @@ export default function CampaignDetailPage() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const response = await fetch("/api/submissions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          campaign_id: params.id,
-          submitter_wallet: publicKey.toBase58(),
-          video_url: videoUrl.trim(),
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data?.error || "Failed to submit video");
-      }
-
-      const validationResult = data?.validation as
-        | { valid: boolean; explanation: string }
-        | undefined;
-      const validationError = data?.validationError as string | undefined;
-
-      // Refetch submissions to show the new one
-      const submissionsResponse = await fetch(`/api/submissions?campaign_id=${params.id}`);
-      if (submissionsResponse.ok) {
-        const submissionsData = await submissionsResponse.json();
-        setSubmissions(submissionsData);
-      }
-
-      // Reset form and close modal
-      setVideoUrl("");
-      setShowSubmitModal(false);
-
-      if (validationResult) {
-        const message = validationResult.valid
-          ? `Video approved! ${validationResult.explanation}`
-          : `Video rejected: ${validationResult.explanation}`;
-        alert(message);
-      } else if (validationError) {
-        alert(
-          `Video submitted, but automatic review failed. Status is pending. Reason: ${validationError}`
-        );
-      } else {
-        alert("Video submitted successfully and is pending review.");
-      }
-    } catch (err) {
-      console.error("Error submitting video:", err);
-      alert(err instanceof Error ? err.message : "Failed to submit video. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+    // Navigate to submit page with the video URL
+    router.push(`/campaigns/${params.id}/submit?videoUrl=${encodeURIComponent(videoUrl.trim())}`);
   };
 
   const handleDistributePayouts = async () => {
@@ -447,18 +395,6 @@ export default function CampaignDetailPage() {
               </div>
             </div>
           </div>
-
-          {/* Submit Content Button */}
-          {campaign.status === "active" && (
-            <div className="mt-6">
-              <Link
-                href={`/campaigns/${params.id}/submit`}
-                className="block w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition font-medium text-center"
-              >
-                Submit Content
-              </Link>
-            </div>
-          )}
         </div>
 
         {/* Submissions Section */}
@@ -592,16 +528,15 @@ export default function CampaignDetailPage() {
                       setVideoUrl("");
                     }}
                     className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                    disabled={submitting}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    disabled={submitting || !videoUrl.trim() || !publicKey || !!isOwner}
+                    disabled={!videoUrl.trim() || !publicKey || !!isOwner}
                     className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
                   >
-                    {submitting ? "Submitting…" : "Submit"}
+                    Next: Validate Video
                   </button>
                 </div>
               </form>
