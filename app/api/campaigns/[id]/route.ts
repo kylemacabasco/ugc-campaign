@@ -90,6 +90,11 @@ export async function PATCH(
         );
       }
       updates.status = status;
+      
+      // Set ended_at timestamp when campaign ends
+      if (status === "ended") {
+        updates.ended_at = new Date().toISOString();
+      }
     }
 
     // Add funding transaction fields if provided

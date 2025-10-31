@@ -106,7 +106,10 @@ export async function GET(request: NextRequest) {
           if (totalViews >= targetViews) {
             const { error: endError } = await supabase
               .from("campaigns")
-              .update({ status: "ended" })
+              .update({ 
+                status: "ended",
+                ended_at: new Date().toISOString()
+              })
               .eq("id", campaign.id)
               .eq("status", "active"); // Only if still active (prevents race condition)
             
