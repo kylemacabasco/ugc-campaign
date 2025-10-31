@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Verify campaign exists and is active
     const { data: campaign } = await supabase
       .from("campaigns")
-      .select("id, status")
+      .select("id, status, rate_per_1k_views")
       .eq("id", campaign_id)
       .maybeSingle();
 
@@ -77,6 +77,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Fetch initial view count and calculate earnings for YouTube videos
+    let initialViewCount = 0;
+    let initialEarnedAmount = 0;
+
+    if (isYouTube) {
+      try {
+        const viewsResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/youtube-views`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+            body: JSON.stringify({ urls: [video_url] }),
+          }
+        );
+
+        if (viewsResponse.ok) {
+          const viewsData = await viewsResponse.json();
+          initialViewCount = Number(viewsData?.results?.[0]?.viewCount ?? 0);
+          // Calculate earned amount: (views / 1000) * rate_per_1k_views
+          initialEarnedAmount = (initialViewCount / 1000) * campaign.rate_per_1k_views;
+        }
+      } catch (error) {
+        console.error("Error fetching initial view count:", error);
+        // Continue with 0 values if fetch fails
+      }
+    }
+
     // Create submission with "approved" status since validation already happened
     // on the submit page before reaching this endpoint
     const { data: submission, error: insertError } = await supabase
@@ -87,6 +115,8 @@ export async function POST(request: NextRequest) {
         video_url,
         platform: isYouTube ? "youtube" : "uploaded",
         status: "approved", // Already validated via /api/validate
+        view_count: initialViewCount,
+        earned_amount: initialEarnedAmount,
       })
       .select()
       .single();

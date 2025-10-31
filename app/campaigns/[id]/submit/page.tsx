@@ -263,8 +263,8 @@ export default function SubmitContentPage() {
                       }`}
                     >
                       {validationResult.valid
-                        ? "✓ Video Meets Requirements!"
-                        : "✗ Video Does Not Meet Requirements"}
+                        ? "✅ Video Meets Requirements!"
+                        : "❌ Video Does Not Meet Requirements"}
                     </h3>
                     <p
                       className={`text-base ${
