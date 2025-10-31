@@ -15,12 +15,12 @@ export default function Home() {
   const [campaigns, setCampaigns] = useState<ApiCampaign[]>([]);
   const [campaignsLoading, setCampaignsLoading] = useState(true);
 
-  // Fetch campaigns for all users
+  // Fetch active campaigns for all users
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
         setCampaignsLoading(true);
-        const response = await fetch('/api/campaigns');
+        const response = await fetch('/api/campaigns?status=active');
         if (response.ok) {
           const data = await response.json();
           setCampaigns(data);
