@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import {
-  validateVideoSubmission,
-  ValidationResponse,
-} from "@/lib/gemini";
 
 // POST /api/submissions - Create new submission
 export async function POST(request: NextRequest) {
@@ -45,10 +41,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify campaign exists and is active
-    // Only active campaigns accept submissions (inactive = not funded, completed/cancelled = ended)
     const { data: campaign } = await supabase
       .from("campaigns")
-      .select("id, status, metadata, description")
+      .select("id, status")
       .eq("id", campaign_id)
       .maybeSingle();
 
@@ -82,7 +77,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create submission
+    // Create submission with "approved" status since validation already happened
+    // on the submit page before reaching this endpoint
     const { data: submission, error: insertError } = await supabase
       .from("submissions")
       .insert({
@@ -90,7 +86,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         video_url,
         platform: isYouTube ? "youtube" : "uploaded",
-        status: "pending",
+        status: "approved", // Already validated via /api/validate
       })
       .select()
       .single();
@@ -103,58 +99,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let finalSubmission = submission;
-    let validation: ValidationResponse | null = null;
-    let validationError: string | null = null;
-
-    // Attempt automatic validation via Gemini if requirements are available
-    const metadata = (campaign as any)?.metadata ?? null;
-    const requirementsFromMetadata =
-      metadata && typeof metadata === "object"
-        ? (metadata as { requirements?: string }).requirements
-        : undefined;
-    const requirementsText =
-      typeof requirementsFromMetadata === "string" && requirementsFromMetadata.trim().length > 0
-        ? requirementsFromMetadata
-        : typeof campaign.description === "string" && campaign.description.trim().length > 0
-        ? campaign.description
-        : null;
-
-    if (requirementsText) {
-      try {
-        validation = await validateVideoSubmission({
-          url: video_url,
-          requirements: requirementsText,
-        });
-
-        const desiredStatus = validation.valid ? "approved" : "rejected";
-        const { data: updatedSubmission, error: updateError } = await supabase
-          .from("submissions")
-          .update({ status: desiredStatus })
-          .eq("id", submission.id)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error("Error updating submission status:", updateError);
-          validationError = "Failed to persist validation result";
-        } else if (updatedSubmission) {
-          finalSubmission = updatedSubmission;
-        } else {
-          finalSubmission = { ...finalSubmission, status: desiredStatus };
-        }
-      } catch (error) {
-        console.error("Gemini validation failed:", error);
-        validationError =
-          error instanceof Error ? error.message : "Gemini validation failed";
-      }
-    }
-
     return NextResponse.json(
       {
-        submission: finalSubmission,
-        validation,
-        validationError,
+        submission,
+        message: "Submission created successfully",
       },
       { status: 201 }
     );
