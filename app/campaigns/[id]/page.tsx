@@ -280,25 +280,25 @@ export default function CampaignDetailPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800";
+        return "badge-active text-white";
       case "draft":
-        return "bg-gray-100 text-gray-800";
+        return "bg-charcoal-light/10 text-charcoal-light border border-charcoal-light/20";
       case "ended":
-        return "bg-blue-100 text-blue-800";
+        return "bg-earth/10 text-earth-dark border border-earth/20";
       case "cancelled":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100/50 text-red-800 border border-red-200/50";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-parchment text-charcoal border border-border";
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-cream py-10 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition group"
+          className="inline-flex items-center gap-2 text-charcoal-light hover:text-charcoal mb-8 transition group"
         >
           <svg
             className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform"
@@ -317,10 +317,10 @@ export default function CampaignDetailPage() {
         </Link>
 
         {/* Campaign Details */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-start justify-between mb-4 gap-3">
+        <div className="bg-card rounded-xl shadow-soft p-8 border-2 border-border">
+          <div className="flex items-start justify-between mb-6 gap-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-gray-900 break-words">
+              <h1 className="text-3xl font-bold text-charcoal break-words tracking-tight">
                 {campaign.title}
               </h1>
             </div>
@@ -329,7 +329,7 @@ export default function CampaignDetailPage() {
                 <button
                   onClick={handleEndCampaign}
                   disabled={ending}
-                  className="px-4 py-2 text-sm bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium whitespace-nowrap"
+                  className="px-4 py-2 text-sm bg-earth text-white rounded-lg hover:bg-earth-dark disabled:bg-charcoal-light/30 disabled:cursor-not-allowed transition-all font-medium whitespace-nowrap shadow-soft"
                 >
                   {ending ? "Ending…" : "End Campaign"}
                 </button>
@@ -338,7 +338,7 @@ export default function CampaignDetailPage() {
                 <button
                   onClick={handleDistributePayouts}
                   disabled={distributing}
-                  className="px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium whitespace-nowrap"
+                  className="px-4 py-2 text-sm bg-sage text-white rounded-lg hover:bg-sage-dark disabled:bg-charcoal-light/30 disabled:cursor-not-allowed transition-all font-medium whitespace-nowrap shadow-soft"
                 >
                   {distributing ? "Distributing…" : "Distribute Payouts"}
                 </button>
@@ -346,18 +346,18 @@ export default function CampaignDetailPage() {
               {isOwner && (
                 <Link
                   href={`/campaigns/${params.id}/edit`}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium whitespace-nowrap"
+                  className="px-4 py-2 text-sm bg-sage text-white rounded-lg hover:bg-sage-dark transition-all font-medium whitespace-nowrap shadow-soft"
                 >
                   Edit
                 </Link>
               )}
               {campaign.distributed && (
-                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium whitespace-nowrap">
+                <span className="px-3 py-1.5 bg-earth/10 text-earth-dark border border-earth/20 rounded-lg text-xs font-medium whitespace-nowrap">
                   DISTRIBUTED
                 </span>
               )}
               <span
-                className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${getStatusColor(
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap ${getStatusColor(
                   campaign.status
                 )}`}
               >
@@ -366,31 +366,31 @@ export default function CampaignDetailPage() {
             </div>
           </div>
 
-          <p className="text-gray-600 mb-6">{campaign.description}</p>
+          <p className="text-charcoal-light mb-8 leading-relaxed">{campaign.description}</p>
 
           {campaign.metadata?.requirements && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="mb-8 p-6 bg-sage/5 border-2 border-sage/20 rounded-lg">
+              <h3 className="text-lg font-semibold text-charcoal mb-3">
                 Requirements
               </h3>
-              <p className="text-gray-700 whitespace-pre-wrap">
+              <p className="text-charcoal-light whitespace-pre-wrap leading-relaxed">
                 {campaign.metadata.requirements}
               </p>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-500 mb-1">Total Budget</div>
-              <div className="text-2xl font-bold text-gray-900">
+          <div className="grid grid-cols-2 gap-6">
+            <div className="bg-parchment p-6 rounded-lg border border-border">
+              <div className="text-sm text-charcoal-light mb-2 font-medium">Total Budget</div>
+              <div className="text-2xl font-bold text-charcoal">
                 {campaign.campaign_amount} SOL
               </div>
             </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="text-sm text-gray-500 mb-1">
+            <div className="bg-parchment p-6 rounded-lg border border-border">
+              <div className="text-sm text-charcoal-light mb-2 font-medium">
                 Rate per 1k Views
               </div>
-              <div className="text-2xl font-bold text-gray-900">
+              <div className="text-2xl font-bold text-charcoal">
                 ${campaign.rate_per_1k_views} USDC
               </div>
             </div>
@@ -398,16 +398,16 @@ export default function CampaignDetailPage() {
         </div>
 
         {/* Submissions Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">
+        <div className="bg-card rounded-xl shadow-soft p-8 border-2 border-border mt-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-charcoal tracking-tight">
               Submissions ({submissions.length})
             </h2>
             <div className="flex gap-3">
               {canSubmit && (
                 <button
                   onClick={() => setShowSubmitModal(true)}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium"
+                  className="px-5 py-2.5 bg-sage text-white rounded-lg hover:bg-sage-dark transition-all font-medium shadow-soft hover:shadow-soft-lg"
                 >
                   Submit Video
                 </button>
@@ -416,7 +416,7 @@ export default function CampaignDetailPage() {
                 <button
                   onClick={handleRefreshViews}
                   disabled={refreshing}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                  className="px-5 py-2.5 bg-earth text-white rounded-lg hover:bg-earth-dark disabled:bg-charcoal-light/30 disabled:cursor-not-allowed transition-all font-medium shadow-soft"
                 >
                   {refreshing ? "Refreshing…" : "Refresh Views"}
                 </button>
@@ -425,7 +425,7 @@ export default function CampaignDetailPage() {
           </div>
 
           {submissions.length === 0 ? (
-            <div className="text-center py-12 text-gray-600">
+            <div className="text-center py-16 text-charcoal-light">
               <p className="text-lg">No submissions yet</p>
               {isOwner ? (
                 <p className="text-base mt-2">Waiting for content creators to submit videos</p>
@@ -434,11 +434,11 @@ export default function CampaignDetailPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {submissions.map((submission) => (
                 <div
                   key={submission.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition"
+                  className="border-2 border-border rounded-lg p-6 hover:border-sage/30 hover:bg-parchment transition-all"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -446,11 +446,11 @@ export default function CampaignDetailPage() {
                         href={submission.video_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 font-medium"
+                        className="text-sage-dark hover:text-sage font-medium transition break-all"
                       >
                         {submission.video_url}
                       </a>
-                      <div className="flex gap-4 mt-2 text-base text-gray-700">
+                      <div className="flex gap-6 mt-3 text-base text-charcoal-light">
                         <span>Views: {submission.view_count.toLocaleString()}</span>
                         <span>Earned: ${submission.earned_amount.toFixed(2)} USDC</span>
                         <span>
@@ -459,12 +459,12 @@ export default function CampaignDetailPage() {
                       </div>
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
                         submission.status === "approved"
-                          ? "bg-green-100 text-green-800"
+                          ? "badge-approved text-white"
                           : submission.status === "rejected"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          ? "bg-red-100/50 text-red-800 border border-red-200/50"
+                          : "bg-earth/10 text-earth-dark border border-earth/20"
                       }`}
                     >
                       {submission.status.toUpperCase()}
@@ -478,30 +478,30 @@ export default function CampaignDetailPage() {
 
         {/* Submit Video Modal */}
         {showSubmitModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="fixed inset-0 bg-charcoal/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-card rounded-xl shadow-soft-lg max-w-md w-full p-8 border-2 border-border">
+              <h3 className="text-2xl font-bold text-charcoal mb-6 tracking-tight">
                 Submit Your Video
               </h3>
               {!publicKey && (
-                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-base text-yellow-900 font-medium">
+                <div className="mb-5 p-4 bg-earth/10 border-2 border-earth/20 rounded-lg">
+                  <p className="text-base text-charcoal-light font-medium">
                     Please connect your wallet to submit a video
                   </p>
                 </div>
               )}
               {isOwner && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-base text-red-900 font-medium">
+                <div className="mb-5 p-4 bg-red-50 border-2 border-red-200/50 rounded-lg">
+                  <p className="text-base text-red-800 font-medium">
                     Campaign creators cannot submit to their own campaigns
                   </p>
                 </div>
               )}
               <form onSubmit={handleSubmitVideo}>
-                <div className="mb-4">
+                <div className="mb-6">
                   <label
                     htmlFor="videoUrl"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-charcoal mb-2"
                   >
                     Video URL
                   </label>
@@ -511,30 +511,30 @@ export default function CampaignDetailPage() {
                     value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
                     placeholder="https://www.youtube.com/watch?v=…"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent placeholder:text-gray-600"
+                    className="w-full px-4 py-3 border-2 border-border rounded-lg focus:border-sage focus:outline-none transition-all placeholder:text-charcoal-light/50 bg-parchment"
                     required
                     disabled={!publicKey || !!isOwner}
                   />
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-charcoal-light mt-2">
                     Enter the URL of your YouTube video
                   </p>
                 </div>
 
-                <div className="flex gap-3 justify-end">
+                <div className="flex gap-4 justify-end">
                   <button
                     type="button"
                     onClick={() => {
                       setShowSubmitModal(false);
                       setVideoUrl("");
                     }}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                    className="px-5 py-2.5 bg-parchment text-charcoal rounded-lg hover:bg-border transition-all font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!videoUrl.trim() || !publicKey || !!isOwner}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
+                    className="px-5 py-2.5 bg-sage text-white rounded-lg hover:bg-sage-dark disabled:bg-charcoal-light/30 disabled:cursor-not-allowed transition-all font-medium shadow-soft"
                   >
                     Next: Validate Video
                   </button>

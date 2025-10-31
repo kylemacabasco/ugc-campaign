@@ -191,10 +191,10 @@ export default function FundCampaignPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading campaign...</p>
+          <div className="animate-spin h-10 w-10 border-3 border-sage border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-charcoal-light text-xl">Loading campaign...</p>
         </div>
       </div>
     );
@@ -202,11 +202,11 @@ export default function FundCampaignPage() {
 
   if (error && !campaign) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50">
-        <div className="text-xl text-red-500">{error}</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-cream">
+        <div className="text-xl text-red-700">{error}</div>
         <button
           onClick={() => router.push("/")}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-6 py-3 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all shadow-soft"
         >
           Back to Home
         </button>
@@ -221,43 +221,43 @@ export default function FundCampaignPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "draft":
-        return "bg-gray-100 text-gray-800";
+        return "bg-charcoal-light/10 text-charcoal-light border border-charcoal-light/20";
       case "active":
-        return "bg-green-100 text-green-800";
+        return "badge-active text-white";
       case "ended":
-        return "bg-blue-100 text-blue-800";
+        return "bg-earth/10 text-earth-dark border border-earth/20";
       case "cancelled":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100/50 text-red-800 border border-red-200/50";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-parchment text-charcoal border border-border";
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-cream py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10">
           <button
             onClick={() => router.push("/")}
-            className="text-blue-600 hover:text-blue-800 mb-4 flex items-center gap-2"
+            className="text-sage-dark hover:text-sage mb-6 flex items-center gap-2 transition"
           >
             ← Back to campaigns
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Fund Campaign</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-charcoal tracking-tight">Fund Campaign</h1>
+          <p className="text-charcoal-light mt-3 text-lg">
             Send SOL to activate your campaign
           </p>
         </div>
 
         {/* Campaign Details Card */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">
+        <div className="bg-card rounded-xl shadow-soft p-8 mb-8 border-2 border-border">
+          <div className="flex items-start justify-between mb-6">
+            <h2 className="text-2xl font-bold text-charcoal tracking-tight">
               {campaign.title}
             </h2>
             <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${getStatusBadge(
                 campaign.status
               )}`}
             >
@@ -265,31 +265,31 @@ export default function FundCampaignPage() {
             </span>
           </div>
 
-          <p className="text-gray-600 mb-6">{campaign.description}</p>
+          <p className="text-charcoal-light mb-8 leading-relaxed">{campaign.description}</p>
 
           {campaign.metadata?.requirements && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+            <div className="mb-8 p-6 bg-sage/5 border-2 border-sage/20 rounded-lg">
+              <h3 className="text-sm font-semibold text-charcoal mb-3">
                 Requirements:
               </h3>
-              <p className="text-gray-600 text-sm">
+              <p className="text-charcoal-light text-sm leading-relaxed">
                 {campaign.metadata.requirements}
               </p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
-              <div className="text-sm text-blue-700 mb-1">Campaign Budget</div>
-              <div className="text-3xl font-bold text-blue-900">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            <div className="bg-parchment p-6 rounded-lg border-2 border-border text-center">
+              <div className="text-sm text-charcoal-light mb-2 font-medium">Campaign Budget</div>
+              <div className="text-3xl font-bold text-charcoal">
                 {campaign.campaign_amount} SOL
               </div>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 text-center">
-              <div className="text-sm text-purple-700 mb-1">
+            <div className="bg-parchment p-6 rounded-lg border-2 border-border text-center">
+              <div className="text-sm text-charcoal-light mb-2 font-medium">
                 Rate per 1k Views
               </div>
-              <div className="text-3xl font-bold text-purple-900">
+              <div className="text-3xl font-bold text-charcoal">
                 {campaign.rate_per_1k_views} SOL
               </div>
             </div>
@@ -297,20 +297,20 @@ export default function FundCampaignPage() {
 
           {/* Alert Messages */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-center">
+            <div className="mb-8 bg-red-50 border-2 border-red-200/50 text-red-700 px-6 py-4 rounded-lg text-center">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md text-center">
-              <p className="font-medium mb-3">{success}</p>
+            <div className="mb-8 bg-sage/10 border-2 border-sage/20 text-sage-dark px-6 py-5 rounded-lg text-center">
+              <p className="font-medium mb-4">{success}</p>
               {txSignature && (
                 <a
                   href={`https://explorer.solana.com/tx/${txSignature}?cluster=mainnet`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-green-800 hover:text-green-900 hover:underline text-sm inline-block mb-3 font-medium"
+                  className="text-sage-dark hover:text-sage hover:underline text-sm inline-block mb-4 font-medium transition"
                 >
                   View transaction on Solana Explorer →
                 </a>
@@ -318,7 +318,7 @@ export default function FundCampaignPage() {
               <div>
                 <button
                   onClick={() => router.push(`/campaigns/${params.id}`)}
-                  className="mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
+                  className="mt-2 px-6 py-3 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all text-sm font-medium shadow-soft"
                 >
                   Go to Campaign Page
                 </button>
@@ -329,11 +329,11 @@ export default function FundCampaignPage() {
           {/* Funding Information - Only show if not successful */}
           {!success && (
             <>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 className="text-sm font-semibold text-yellow-800 mb-2">
+              <div className="bg-earth/5 border-2 border-earth/20 rounded-lg p-6 mb-8">
+                <h3 className="text-sm font-semibold text-charcoal mb-4">
                   💡 How it works:
                 </h3>
-                <ul className="text-sm text-yellow-700 space-y-1 text-left inline-block">
+                <ul className="text-sm text-charcoal-light space-y-2.5 text-left leading-relaxed">
                   <li>
                     • You will send {campaign.campaign_amount} SOL to fund this
                     campaign
@@ -354,7 +354,7 @@ export default function FundCampaignPage() {
               <div className="flex gap-4">
             <button
               onClick={() => router.back()}
-              className="flex-1 px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+              className="flex-1 px-6 py-3.5 border-2 border-border rounded-xl text-charcoal hover:bg-parchment transition-all font-medium"
             >
               Cancel
             </button>
@@ -366,11 +366,11 @@ export default function FundCampaignPage() {
                 campaign.status !== "draft" ||
                 campaign.creator_id !== user?.id
               }
-              className="flex-1 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex-1 px-6 py-3.5 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-soft hover:shadow-soft-lg"
             >
               {funding ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
                   Sending...
                 </span>
               ) : (

@@ -143,24 +143,24 @@ export default function SubmitContentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-cream py-10 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8">
           <Link
             href={`/campaigns/${params.id}`}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
+            className="inline-flex items-center gap-2 text-charcoal-light hover:text-charcoal transition group"
           >
             <svg
               className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              strokeWidth={2}
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
                 d="M15 19l-7-7 7-7"
               />
             </svg>
@@ -168,19 +168,19 @@ export default function SubmitContentPage() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+        <div className="bg-card rounded-xl shadow-soft p-10 border-2 border-border">
+          <h1 className="text-3xl font-bold text-charcoal mb-8 tracking-tight">
             Submit Your Video
           </h1>
 
           {/* Video URL Display */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-600 mb-2">Video URL:</div>
+          <div className="mb-8 p-5 bg-parchment rounded-lg border border-border">
+            <div className="text-sm text-charcoal-light mb-2 font-medium">Video URL:</div>
             <a
               href={videoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 break-all"
+              className="text-sage-dark hover:text-sage break-all transition"
             >
               {videoUrl}
             </a>
@@ -188,14 +188,14 @@ export default function SubmitContentPage() {
 
           {/* Campaign Info */}
           {campaign && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="mb-8 p-5 bg-sage/5 border-2 border-sage/20 rounded-lg">
+              <h3 className="text-lg font-semibold text-charcoal mb-3">
                 Campaign: {campaign.title}
               </h3>
               {campaign.metadata?.requirements && (
-                <div className="text-sm text-gray-700 whitespace-pre-wrap">
-                  <strong>Requirements:</strong>
-                  <p className="mt-1">{campaign.metadata.requirements}</p>
+                <div className="text-sm text-charcoal-light whitespace-pre-wrap">
+                  <strong className="text-charcoal">Requirements:</strong>
+                  <p className="mt-2 leading-relaxed">{campaign.metadata.requirements}</p>
                 </div>
               )}
             </div>
@@ -203,54 +203,54 @@ export default function SubmitContentPage() {
 
           {/* Flow Steps */}
           {flowStep === "validating" && (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-14 w-14 border-3 border-sage border-t-transparent mb-6"></div>
+              <h2 className="text-2xl font-semibold text-charcoal mb-3 tracking-tight">
                 Analyzing Your Video
               </h2>
-              <p className="text-gray-600">
+              <p className="text-charcoal-light leading-relaxed">
                 Our AI is reviewing your video against the campaign requirements...
               </p>
             </div>
           )}
 
           {flowStep === "result" && validationResult && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Validation Result */}
               <div
-                className={`p-6 rounded-lg border-2 ${
+                className={`p-8 rounded-xl border-2 ${
                   validationResult.valid
-                    ? "bg-green-50 border-green-300"
-                    : "bg-red-50 border-red-300"
+                    ? "bg-sage/5 border-sage/30"
+                    : "bg-red-50/50 border-red-200/50"
                 }`}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-5">
                   <div className="flex-shrink-0">
                     {validationResult.valid ? (
                       <svg
-                        className="w-8 h-8 text-green-600"
+                        className="w-10 h-10 text-sage"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
+                        strokeWidth={2}
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
                           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
                     ) : (
                       <svg
-                        className="w-8 h-8 text-red-600"
+                        className="w-10 h-10 text-red-600"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
+                        strokeWidth={2}
                       >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
                           d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
@@ -258,8 +258,8 @@ export default function SubmitContentPage() {
                   </div>
                   <div className="flex-1">
                     <h3
-                      className={`text-xl font-bold mb-2 ${
-                        validationResult.valid ? "text-green-900" : "text-red-900"
+                      className={`text-xl font-bold mb-3 tracking-tight ${
+                        validationResult.valid ? "text-sage-dark" : "text-red-800"
                       }`}
                     >
                       {validationResult.valid
@@ -267,8 +267,8 @@ export default function SubmitContentPage() {
                         : "❌ Video Does Not Meet Requirements"}
                     </h3>
                     <p
-                      className={`text-base ${
-                        validationResult.valid ? "text-green-800" : "text-red-800"
+                      className={`text-base leading-relaxed ${
+                        validationResult.valid ? "text-charcoal-light" : "text-red-700"
                       }`}
                     >
                       {validationResult.explanation}
@@ -278,19 +278,19 @@ export default function SubmitContentPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
+              <div className="flex gap-5">
                 {validationResult.valid ? (
                   <>
                     <button
                       onClick={handleBackToCampaign}
-                      className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                      className="flex-1 px-6 py-3.5 bg-parchment text-charcoal rounded-xl hover:bg-border transition-all font-medium shadow-soft"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleConfirmSubmission}
                       disabled={!user || !publicKey}
-                      className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+                      className="flex-1 px-6 py-3.5 bg-sage text-white rounded-xl hover:bg-sage-dark disabled:bg-charcoal-light/30 disabled:cursor-not-allowed transition-all font-medium shadow-soft hover:shadow-soft-lg"
                     >
                       {!user || !publicKey
                         ? "Connect Wallet to Submit"
@@ -300,7 +300,7 @@ export default function SubmitContentPage() {
                 ) : (
                   <button
                     onClick={handleBackToCampaign}
-                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                    className="w-full px-6 py-3.5 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all font-medium shadow-soft hover:shadow-soft-lg"
                   >
                     Back to Campaign
                   </button>
@@ -308,9 +308,9 @@ export default function SubmitContentPage() {
               </div>
 
               {!validationResult.valid && (
-                <div className="text-center text-sm text-gray-600">
+                <div className="text-center text-sm text-charcoal-light">
                   <p>Your video does not meet the requirements for this campaign.</p>
-                  <p className="mt-1">
+                  <p className="mt-1.5">
                     Please review the requirements and submit a different video.
                   </p>
                 </div>
@@ -319,41 +319,41 @@ export default function SubmitContentPage() {
           )}
 
           {flowStep === "submitting" && (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-14 w-14 border-3 border-sage border-t-transparent mb-6"></div>
+              <h2 className="text-2xl font-semibold text-charcoal mb-3 tracking-tight">
                 Submitting Your Video
               </h2>
-              <p className="text-gray-600">Please wait...</p>
+              <p className="text-charcoal-light">Please wait...</p>
             </div>
           )}
 
           {flowStep === "success" && (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-sage/10 border-2 border-sage/30 rounded-full mb-6">
                 <svg
-                  className="w-10 h-10 text-green-600"
+                  className="w-12 h-12 text-sage"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  strokeWidth={2}
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-semibold text-charcoal mb-3 tracking-tight">
                 Video Submitted Successfully!
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-charcoal-light mb-8 leading-relaxed">
                 Your video has been submitted to the campaign. You can now view it on the campaign page.
               </p>
               <button
                 onClick={handleBackToCampaign}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                className="px-8 py-3.5 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all font-medium shadow-soft hover:shadow-soft-lg"
               >
                 Back to Campaign
               </button>
@@ -361,29 +361,29 @@ export default function SubmitContentPage() {
           )}
 
           {flowStep === "error" && (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-50 border-2 border-red-200 rounded-full mb-6">
                 <svg
-                  className="w-10 h-10 text-red-600"
+                  className="w-12 h-12 text-red-600"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  strokeWidth={2}
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h2 className="text-2xl font-semibold text-charcoal mb-3 tracking-tight">
                 Something Went Wrong
               </h2>
-              <p className="text-red-600 mb-6">{error}</p>
+              <p className="text-red-700 mb-8">{error}</p>
               <button
                 onClick={handleBackToCampaign}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                className="px-8 py-3.5 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all font-medium shadow-soft hover:shadow-soft-lg"
               >
                 Back to Campaign
               </button>

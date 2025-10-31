@@ -72,30 +72,30 @@ export default function CreateCampaignPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600">Please sign in to create a campaign.</p>
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <p className="text-charcoal-light text-lg">Please sign in to create a campaign.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-cream py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Campaign</h1>
-          <p className="text-gray-600 mt-2">Set up a campaign for UGC creators</p>
+        <div className="mb-10">
+          <h1 className="text-3xl font-bold text-charcoal tracking-tight">Create New Campaign</h1>
+          <p className="text-charcoal-light mt-3 text-lg">Set up a campaign for UGC creators</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
-          {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>}
-          {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">{success}</div>}
+        <form onSubmit={handleSubmit} className="bg-card rounded-xl shadow-soft p-8 border-2 border-border space-y-8">
+          {error && <div className="bg-red-50 border-2 border-red-200/50 text-red-700 px-5 py-4 rounded-lg">{error}</div>}
+          {success && <div className="bg-sage/10 border-2 border-sage/20 text-sage-dark px-5 py-4 rounded-lg">{success}</div>}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+            <label className="block text-sm font-medium text-charcoal mb-2">Title</label>
             <input
               type="text"
               required
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+              className="w-full border-2 border-border rounded-lg px-4 py-3 focus:border-sage focus:outline-none transition-all text-charcoal placeholder:text-charcoal-light/50 bg-parchment"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g., Product Review Campaign"
@@ -103,11 +103,11 @@ export default function CreateCampaignPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label className="block text-sm font-medium text-charcoal mb-2">Description</label>
             <textarea
               required
               rows={4}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+              className="w-full border-2 border-border rounded-lg px-4 py-3 focus:border-sage focus:outline-none transition-all text-charcoal placeholder:text-charcoal-light/50 bg-parchment"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe what creators need to do..."
@@ -115,41 +115,41 @@ export default function CreateCampaignPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Requirements</label>
+            <label className="block text-sm font-medium text-charcoal mb-2">Requirements</label>
             <textarea
               required
               rows={3}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+              className="w-full border-2 border-border rounded-lg px-4 py-3 focus:border-sage focus:outline-none transition-all text-charcoal placeholder:text-charcoal-light/50 bg-parchment"
               value={formData.requirements}
               onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
               placeholder="e.g., Feature our product for at least 10 seconds, mention our brand name..."
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bounty Amount (SOL)</label>
+              <label className="block text-sm font-medium text-charcoal mb-2">Bounty Amount (SOL)</label>
               <input
                 inputMode="decimal"
                 type="number"
                 required
                 step="0.000001"
                 min="0.000001"
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+                className="w-full border-2 border-border rounded-lg px-4 py-3 focus:border-sage focus:outline-none transition-all text-charcoal placeholder:text-charcoal-light/50 bg-parchment"
                 value={formData.bountyAmount}
                 onChange={(e) => setFormData({ ...formData, bountyAmount: e.target.value })}
                 placeholder="10.000000"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Rate per 1k Views (SOL)</label>
+              <label className="block text-sm font-medium text-charcoal mb-2">Rate per 1k Views (SOL)</label>
               <input
                 inputMode="decimal"
                 type="number"
                 required
                 step="0.000001"
                 min="0.000001"
-                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+                className="w-full border-2 border-border rounded-lg px-4 py-3 focus:border-sage focus:outline-none transition-all text-charcoal placeholder:text-charcoal-light/50 bg-parchment"
                 value={formData.ratePer1kViews}
                 onChange={(e) => setFormData({ ...formData, ratePer1kViews: e.target.value })}
                 placeholder="0.500000"
@@ -157,18 +157,18 @@ export default function CreateCampaignPage() {
             </div>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 px-6 py-3 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 px-6 py-3.5 border-2 border-border rounded-xl text-charcoal hover:bg-parchment transition-all font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3.5 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-soft hover:shadow-soft-lg"
             >
               {isSubmitting ? "Creating..." : "Create Campaign"}
             </button>

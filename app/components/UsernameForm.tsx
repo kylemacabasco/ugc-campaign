@@ -128,27 +128,27 @@ export default function UsernameForm({ isFirstTime = false, onComplete }: Userna
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
+    <div className="max-w-md mx-auto p-8 bg-card rounded-xl shadow-soft border-2 border-border">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-charcoal tracking-tight">
           {isFirstTime ? 'Welcome!' : 'Update Username'}
         </h2>
-        <p className="text-gray-600 mt-2">
+        <p className="text-charcoal-light mt-3 leading-relaxed">
           {isFirstTime 
             ? 'Choose a username for your account' 
             : 'Change your username'
           }
         </p>
         {user?.wallet_address && (
-          <p className="text-sm text-gray-500 mt-1 font-mono">
+          <p className="text-sm text-charcoal-light mt-2 font-mono">
             {user.wallet_address.slice(0, 8)}…{user.wallet_address.slice(-8)}
           </p>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="username" className="block text-sm font-medium text-charcoal mb-2">
             Username
           </label>
           <div className="relative">
@@ -158,57 +158,57 @@ export default function UsernameForm({ isFirstTime = false, onComplete }: Userna
               value={username}
               onChange={handleUsernameChange}
               placeholder="Enter your username"
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 placeholder-gray-500 ${
+              className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-all bg-parchment text-charcoal placeholder-charcoal-light/50 ${
                 validationError || (isAvailable === false)
                   ? 'border-red-300'
                   : isAvailable === true
-                  ? 'border-green-300'
-                  : 'border-gray-300'
+                  ? 'border-sage'
+                  : 'border-border focus:border-sage'
               }`}
               disabled={isSubmitting}
             />
             {isChecking && (
-              <div className="absolute right-3 top-2">
-                <div className="animate-spin h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              <div className="absolute right-3 top-3.5">
+                <div className="animate-spin h-5 w-5 border-2 border-sage border-t-transparent rounded-full"></div>
               </div>
             )}
             {!isChecking && isAvailable === true && (
-              <div className="absolute right-3 top-2 text-green-500">
+              <div className="absolute right-3 top-3.5 text-sage">
                 ✅
               </div>
             )}
             {!isChecking && isAvailable === false && (
-              <div className="absolute right-3 top-2 text-orange-500">
+              <div className="absolute right-3 top-3.5 text-red-600">
                 ❌
               </div>
             )}
           </div>
 
           {validationError && (
-            <p className="text-red-600 text-sm mt-1">{validationError}</p>
+            <p className="text-red-700 text-sm mt-2">{validationError}</p>
           )}
 
           {!validationError && isAvailable === false && (
-            <p className="text-red-600 text-sm mt-1">Username is already taken</p>
+            <p className="text-red-700 text-sm mt-2">Username is already taken</p>
           )}
 
           {!validationError && isAvailable === true && (
-            <p className="text-green-600 text-sm mt-1">Username is available!</p>
+            <p className="text-sage-dark text-sm mt-2">Username is available!</p>
           )}
           
           {profileError && (
-            <p className="text-red-600 text-sm mt-1">{profileError}</p>
+            <p className="text-red-700 text-sm mt-2">{profileError}</p>
           )}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-2">
           <button
             type="submit"
             disabled={isUpdating || !!validationError || isAvailable !== true}
-            className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors ${
+            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
               isSubmitting || !!validationError || isAvailable !== true
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                ? 'bg-charcoal-light/30 text-charcoal-light cursor-not-allowed'
+                : 'bg-sage text-white hover:bg-sage-dark shadow-soft hover:shadow-soft-lg'
             }`}
           >
           
@@ -220,7 +220,7 @@ export default function UsernameForm({ isFirstTime = false, onComplete }: Userna
               type="button"
               onClick={handleSkip}
               disabled={isUpdating}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
+              className="px-5 py-3 text-charcoal-light hover:text-charcoal font-medium transition-colors"
             >
               Skip for now
             </button>
@@ -229,9 +229,9 @@ export default function UsernameForm({ isFirstTime = false, onComplete }: Userna
       </form>
 
       {!isFirstTime && (
-        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-          <p className="text-sm text-yellow-800">
-            <strong>Note:</strong> In the future, you&apos;ll need to sign a transaction to verify wallet ownership before changing your username.
+        <div className="mt-6 p-4 bg-earth/5 border-2 border-earth/20 rounded-lg">
+          <p className="text-sm text-charcoal-light leading-relaxed">
+            <strong className="text-charcoal">Note:</strong> In the future, you&apos;ll need to sign a transaction to verify wallet ownership before changing your username.
           </p>
         </div>
       )}

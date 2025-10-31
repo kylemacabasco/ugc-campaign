@@ -38,10 +38,10 @@ export default function Home() {
   // Show loading state
   if (connected && loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cream">
         <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading…</p>
+          <div className="animate-spin h-10 w-10 border-3 border-sage border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-charcoal-light">Loading…</p>
         </div>
       </div>
     );
@@ -50,44 +50,44 @@ export default function Home() {
   // Show wallet connection if not connected
   if (!connected) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-cream">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b">
+        <header className="bg-card border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <h1 className="text-xl font-semibold text-gray-900">UGC Campaigns</h1>
+            <div className="flex justify-between items-center h-20">
+              <h1 className="text-2xl font-semibold text-charcoal tracking-tight">UGC Campaigns</h1>
               <WalletButton />
             </div>
           </div>
         </header>
 
         {/* Main content */}
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+        <main className="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+          <div className="px-4 py-8 sm:px-0">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-charcoal mb-4 tracking-tight">
                 Browse Available Campaigns
               </h2>
-              <p className="text-gray-600">
+              <p className="text-charcoal-light text-lg">
                 Connect your wallet to participate in campaigns
               </p>
             </div>
 
             {/* Campaigns grid */}
             {campaignsLoading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading campaigns…</p>
+              <div className="text-center py-16">
+                <div className="animate-spin h-10 w-10 border-3 border-sage border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-charcoal-light">Loading campaigns…</p>
               </div>
             ) : campaigns.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {campaigns.map((campaign) => (
                   <CampaignCard key={campaign.id} campaign={campaign} currentUserId={user?.id}/>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No campaigns available yet</p>
+              <div className="text-center py-16">
+                <p className="text-charcoal-light">No campaigns available yet</p>
               </div>
             )}
           </div>
@@ -99,7 +99,7 @@ export default function Home() {
   // Show username form for first-time users without username
   if (user && !user.username) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-4">
         <UsernameForm 
           isFirstTime={true} 
         />
@@ -109,27 +109,27 @@ export default function Home() {
 
   // Main app interface for authenticated users
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-cream">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-6">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-1">
+              <h2 className="text-3xl font-bold text-charcoal mb-2 tracking-tight">
                 Available Campaigns
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className="text-charcoal-light text-base">
                 Browse and participate in UGC campaigns
               </p>
             </div>
-            <div className="flex items-center space-x-3">
-              <span className="text-sm text-gray-600">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-charcoal-light font-medium">
                 {user?.username}
               </span>
-              <WalletMultiButton className="!text-xs !py-1 !px-3" />
+              <WalletMultiButton className="!text-xs !py-2 !px-4" />
               <Link
                 href={`/profile/${user?.wallet_address}`}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm"
+                className="bg-sage text-white px-5 py-2 rounded-lg hover:bg-sage-dark transition-all text-sm font-medium shadow-soft hover:shadow-soft-lg"
               >
                 Profile
               </Link>
@@ -139,25 +139,25 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
+        <div className="px-4 py-8 sm:px-0">
           
           {/* Create Campaign Button */}
-          <div className="mb-6 flex justify-end">
+          <div className="mb-8 flex justify-end">
             <Link
               href="/create"
-              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md hover:shadow-lg flex items-center gap-2"
+              className="bg-sage text-white px-8 py-3 rounded-xl hover:bg-sage-dark transition-all font-medium shadow-soft hover:shadow-soft-lg flex items-center gap-2"
             >
               <svg 
                 className="w-5 h-5" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
+                strokeWidth={2}
               >
                 <path 
                   strokeLinecap="round" 
                   strokeLinejoin="round" 
-                  strokeWidth={2} 
                   d="M12 4v16m8-8H4" 
                 />
               </svg>
@@ -167,21 +167,21 @@ export default function Home() {
 
           {/* Campaigns grid */}
           {campaignsLoading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading campaigns…</p>
+            <div className="text-center py-16">
+              <div className="animate-spin h-10 w-10 border-3 border-sage border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-charcoal-light">Loading campaigns…</p>
             </div>
           ) : campaigns.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {campaigns.map((campaign) => (
                 <CampaignCard key={campaign.id} campaign={campaign} currentUserId={user?.id} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
-                <p className="text-gray-500 mb-4">No campaigns available yet</p>
-                <p className="text-sm text-gray-400">
+            <div className="text-center py-16">
+              <div className="bg-card p-10 rounded-xl border border-border max-w-md mx-auto shadow-soft">
+                <p className="text-charcoal-light mb-3 text-lg">No campaigns available yet</p>
+                <p className="text-sm text-charcoal-light opacity-70">
                   Check back soon for new opportunities!
                 </p>
               </div>

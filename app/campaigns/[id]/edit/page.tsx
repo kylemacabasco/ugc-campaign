@@ -107,19 +107,22 @@ export default function EditCampaignPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl animate-pulse">Loading campaign…</div>
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <div className="text-center">
+          <div className="animate-spin h-10 w-10 border-3 border-sage border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-charcoal-light text-xl">Loading campaign…</p>
+        </div>
       </div>
     );
   }
 
   if (error || !campaign) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <div className="text-xl text-red-500">{error || "Campaign not found"}</div>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-cream">
+        <div className="text-xl text-red-700">{error || "Campaign not found"}</div>
         <Link
           href="/"
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="px-6 py-3 bg-sage text-white rounded-xl hover:bg-sage-dark transition-all shadow-soft"
         >
           Back to Home
         </Link>
@@ -128,34 +131,34 @@ export default function EditCampaignPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-cream py-10 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Edit Campaign</h1>
+        <div className="bg-card rounded-xl shadow-soft p-8 border-2 border-border">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl font-bold text-charcoal tracking-tight">Edit Campaign</h1>
             <Link
               href={`/campaigns/${params.id}`}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-sage-dark hover:text-sage transition"
             >
               ← Back to Campaign
             </Link>
           </div>
 
           {/* Notice about locked fields */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Campaign amount and rate cannot be changed after creation.
+          <div className="bg-sage/5 border-2 border-sage/20 rounded-lg p-5 mb-8">
+            <p className="text-sm text-charcoal-light leading-relaxed">
+              <strong className="text-charcoal">Note:</strong> Campaign amount and rate cannot be changed after creation.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Title */}
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-charcoal mb-2"
               >
-                Title <span className="text-red-500">*</span>
+                Title <span className="text-red-600">*</span>
               </label>
               <input
                 type="text"
@@ -164,10 +167,10 @@ export default function EditCampaignPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 maxLength={200}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                className="w-full px-4 py-3 border-2 border-border rounded-lg focus:border-sage focus:outline-none transition-all text-charcoal bg-parchment"
                 placeholder="My Awesome Campaign"
               />
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-charcoal-light">
                 {title.length}/200 characters
               </p>
             </div>
@@ -176,7 +179,7 @@ export default function EditCampaignPage() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-charcoal mb-2"
               >
                 Description
               </label>
@@ -186,10 +189,10 @@ export default function EditCampaignPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 maxLength={5000}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                className="w-full px-4 py-3 border-2 border-border rounded-lg focus:border-sage focus:outline-none transition-all text-charcoal bg-parchment"
                 placeholder="Describe your campaign…"
               />
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-charcoal-light">
                 {description.length}/5000 characters
               </p>
             </div>
@@ -198,7 +201,7 @@ export default function EditCampaignPage() {
             <div>
               <label
                 htmlFor="assetFolder"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-charcoal mb-2"
               >
                 Asset Folder URL
               </label>
@@ -207,29 +210,29 @@ export default function EditCampaignPage() {
                 id="assetFolder"
                 value={assetFolderUrl}
                 onChange={(e) => setAssetFolderUrl(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                className="w-full px-4 py-3 border-2 border-border rounded-lg focus:border-sage focus:outline-none transition-all text-charcoal bg-parchment"
                 placeholder="https://drive.google.com/…"
               />
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-charcoal-light">
                 Link to folder with campaign assets, guidelines, etc.
               </p>
             </div>
 
             {/* Locked Fields (Read-only display) */}
-            <div className="border-t pt-6">
-              <h3 className="text-sm font-medium text-gray-700 mb-4">
+            <div className="border-t-2 border-border pt-8">
+              <h3 className="text-sm font-medium text-charcoal mb-5">
                 Campaign Terms (Cannot be changed)
               </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-500 mb-1">Total Budget</div>
-                  <div className="text-xl font-bold text-gray-900">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-parchment p-5 rounded-lg border border-border">
+                  <div className="text-sm text-charcoal-light mb-2 font-medium">Total Budget</div>
+                  <div className="text-xl font-bold text-charcoal">
                     {campaign.campaign_amount} SOL
                   </div>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm text-gray-500 mb-1">Rate per 1k Views</div>
-                  <div className="text-xl font-bold text-gray-900">
+                <div className="bg-parchment p-5 rounded-lg border border-border">
+                  <div className="text-sm text-charcoal-light mb-2 font-medium">Rate per 1k Views</div>
+                  <div className="text-xl font-bold text-charcoal">
                     ${campaign.rate_per_1k_views} USDC
                   </div>
                 </div>
@@ -238,23 +241,23 @@ export default function EditCampaignPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="bg-red-50 border-2 border-red-200/50 text-red-700 px-5 py-4 rounded-lg">
                 {error}
               </div>
             )}
 
             {/* Submit Button */}
-            <div className="flex gap-4">
+            <div className="flex gap-4 pt-4">
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+                className="flex-1 bg-sage text-white py-3.5 px-4 rounded-xl hover:bg-sage-dark disabled:bg-charcoal-light/30 disabled:cursor-not-allowed transition-all font-medium shadow-soft hover:shadow-soft-lg"
               >
                 {saving ? "Saving…" : "Save Changes"}
               </button>
               <Link
                 href={`/campaigns/${params.id}`}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                className="px-6 py-3.5 border-2 border-border text-charcoal rounded-xl hover:bg-parchment transition-all font-medium inline-flex items-center"
               >
                 Cancel
               </Link>
